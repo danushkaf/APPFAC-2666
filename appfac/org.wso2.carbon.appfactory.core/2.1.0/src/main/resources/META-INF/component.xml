@@ -23,6 +23,11 @@
             <extension>apptype</extension>
             <class>org.wso2.carbon.appfactory.core.apptype.ApplicationTypeDeployer</class>
         </deployer>
+        <deployer>
+            <directory>runtimes</directory>
+            <extension>runtime</extension>
+            <class>org.wso2.carbon.appfactory.core.runtime.RuntimeDeployer</class>
+        </deployer>
     </deployers>
 
 </component>
