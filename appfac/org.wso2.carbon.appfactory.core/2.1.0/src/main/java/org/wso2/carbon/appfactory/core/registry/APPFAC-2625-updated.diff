@@ -1,0 +1,17 @@
+Index: AppFacRemoteRegistryAccessService.java
+===================================================================
+--- AppFacRemoteRegistryAccessService.java	(revision 209578)
++++ AppFacRemoteRegistryAccessService.java	(working copy)
+@@ -381,8 +381,10 @@
+     public void copyNonExistingResources(String sourceServerUrl, String sourcePath,
+                                          String destServerUrl, String appId, String username)
+             throws AppFactoryException {
+-        log.debug("Copying non existing resources of application : " + appId +
+-                  " from : " + sourceServerUrl + "to : " + destServerUrl);
++        if (log.isDebugEnabled()) {
++            log.debug("Copying non existing resources of application : " + appId +
++                      " from : " + sourceServerUrl + "to : " + destServerUrl);
++        }
+         try {
+             WSRegistryServiceClient sourceWsClient = new WSRegistryServiceClient(sourceServerUrl, null);
+             WSRegistryServiceClient destWsClient = new WSRegistryServiceClient(destServerUrl, null);

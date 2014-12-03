@@ -1,0 +1,458 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <option name="DEFAULT_COMPILER" value="Javac" />
+    <resourceExtensions />
+    <wildcardResourcePatterns>
+      <entry name="!?*.java" />
+      <entry name="!?*.form" />
+      <entry name="!?*.class" />
+      <entry name="!?*.groovy" />
+      <entry name="!?*.scala" />
+      <entry name="!?*.flex" />
+      <entry name="!?*.kt" />
+      <entry name="!?*.clj" />
+    </wildcardResourcePatterns>
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="false">
+        <processorPath useClasspath="true" />
+      </profile>
+      <profile default="false" name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="true" />
+        <module name="appfactory-authentication-plugin (1)" />
+        <module name="appfactory-authentication-plugin (2)" />
+        <module name="appfactory-plugin (1)" />
+        <module name="appfactory-plugin (2)" />
+        <module name="appfactory.gitblit.plugin (1)" />
+        <module name="appfactory.gitblit.plugin (2)" />
+        <module name="appmgt (1)" />
+        <module name="dynamic-slave (1)" />
+        <module name="dynamic-slave (2)" />
+        <module name="org.wso2.appfactory.integration.admin.clients (2)" />
+        <module name="org.wso2.appfactory.integration.test.utils (2)" />
+        <module name="org.wso2.appfactory.tests.scenarios (2)" />
+        <module name="org.wso2.carbon.apimgt.gateway" />
+        <module name="org.wso2.carbon.appfactory.apiManager.integration (2)" />
+        <module name="org.wso2.carbon.appfactory.application.mgt (2)" />
+        <module name="org.wso2.carbon.appfactory.appserver.deployment.listener" />
+        <module name="org.wso2.carbon.appfactory.bam.integration (2)" />
+        <module name="org.wso2.carbon.appfactory.build (2)" />
+        <module name="org.wso2.carbon.appfactory.common (2)" />
+        <module name="org.wso2.carbon.appfactory.core (2)" />
+        <module name="org.wso2.carbon.appfactory.deployers (2)" />
+        <module name="org.wso2.carbon.appfactory.eventing (2)" />
+        <module name="org.wso2.carbon.appfactory.ext (1)" />
+        <module name="org.wso2.carbon.appfactory.ext (2)" />
+        <module name="org.wso2.carbon.appfactory.hostobjects.configuration (2)" />
+        <module name="org.wso2.carbon.appfactory.issuetracking (2)" />
+        <module name="org.wso2.carbon.appfactory.jenkinsext (1)" />
+        <module name="org.wso2.carbon.appfactory.jenkinsext (2)" />
+        <module name="org.wso2.carbon.appfactory.listners (2)" />
+        <module name="org.wso2.carbon.appfactory.login.ui (2)" />
+        <module name="org.wso2.carbon.appfactory.multitenant.jenkins (2)" />
+        <module name="org.wso2.carbon.appfactory.repository.mgt.service (2)" />
+        <module name="org.wso2.carbon.appfactory.s4.integration (2)" />
+        <module name="org.wso2.carbon.appfactory.stratos.listners (2)" />
+        <module name="org.wso2.carbon.appfactory.tenant.mgt (2)" />
+        <module name="org.wso2.carbon.appfactory.userstore (2)" />
+        <module name="org.wso2.carbon.appfactory.utilities (2)" />
+        <module name="org.wso2.carbon.dataservices.common" />
+        <module name="org.wso2.carbon.dataservices.core" />
+        <module name="org.wso2.carbon.deployment.synchronizer (1)" />
+        <module name="org.wso2.carbon.governance.custom.lifecycles.checklist" />
+        <module name="org.wso2.carbon.governance.registry.extensions" />
+        <module name="org.wso2.carbon.identity.application.authentication.framework" />
+        <module name="org.wso2.carbon.identity.application.authentication.framework (1)" />
+        <module name="org.wso2.carbon.identity.authenticator.mutualssl" />
+        <module name="org.wso2.carbon.identity.authenticator.saml2.sso" />
+        <module name="org.wso2.carbon.identity.authenticator.saml2.sso (1)" />
+        <module name="org.wso2.carbon.identity.authenticator.saml2.sso (2)" />
+        <module name="org.wso2.carbon.identity.authenticator.saml2.sso.common" />
+        <module name="org.wso2.carbon.identity.authenticator.saml2.sso.common (1)" />
+        <module name="org.wso2.carbon.identity.authenticator.saml2.sso.common (2)" />
+        <module name="org.wso2.carbon.identity.authenticator.signedjwt" />
+        <module name="org.wso2.carbon.identity.entitlement.mediator" />
+        <module name="org.wso2.carbon.identity.entitlement.mediator (2)" />
+        <module name="org.wso2.carbon.identity.oauth" />
+        <module name="org.wso2.carbon.issue.tracker (1)" />
+        <module name="org.wso2.carbon.issue.tracker (1) (org.wso2.carbon)" />
+        <module name="org.wso2.carbon.issue.tracker (2)" />
+        <module name="org.wso2.carbon.issue.tracker.adapter" />
+        <module name="org.wso2.carbon.issue.tracker.core" />
+        <module name="org.wso2.carbon.issue.tracker.mgt" />
+        <module name="org.wso2.carbon.issue.tracker.ui" />
+        <module name="org.wso2.carbon.jaxws.webapp.deployer" />
+        <module name="org.wso2.carbon.jaxws.webapp.mgt" />
+        <module name="org.wso2.carbon.jira.reporting" />
+        <module name="org.wso2.carbon.mediator.aggregate.ui" />
+        <module name="org.wso2.carbon.mediator.bam" />
+        <module name="org.wso2.carbon.mediator.bam.config" />
+        <module name="org.wso2.carbon.mediator.bam.config.ui" />
+        <module name="org.wso2.carbon.mediator.bam.ui" />
+        <module name="org.wso2.carbon.mediator.bean.ui" />
+        <module name="org.wso2.carbon.mediator.cache.ui" />
+        <module name="org.wso2.carbon.mediator.call.ui" />
+        <module name="org.wso2.carbon.mediator.callout.ui" />
+        <module name="org.wso2.carbon.mediator.calltemplate.ui" />
+        <module name="org.wso2.carbon.mediator.clazz.services" />
+        <module name="org.wso2.carbon.mediator.clazz.ui" />
+        <module name="org.wso2.carbon.mediator.clone.ui" />
+        <module name="org.wso2.carbon.mediator.command.services" />
+        <module name="org.wso2.carbon.mediator.command.ui" />
+        <module name="org.wso2.carbon.mediator.conditionalrouter.ui" />
+        <module name="org.wso2.carbon.mediator.dblookup.ui" />
+        <module name="org.wso2.carbon.mediator.dbreport.ui" />
+        <module name="org.wso2.carbon.mediator.drop.ui" />
+        <module name="org.wso2.carbon.mediator.ejb.ui" />
+        <module name="org.wso2.carbon.mediator.enqueue.ui" />
+        <module name="org.wso2.carbon.mediator.enrich.ui" />
+        <module name="org.wso2.carbon.mediator.entitlement.ui" />
+        <module name="org.wso2.carbon.mediator.event" />
+        <module name="org.wso2.carbon.mediator.event.ui" />
+        <module name="org.wso2.carbon.mediator.fastXSLT" />
+        <module name="org.wso2.carbon.mediator.fastXSLT.ui" />
+        <module name="org.wso2.carbon.mediator.fault.ui" />
+        <module name="org.wso2.carbon.mediator.filter.ui" />
+        <module name="org.wso2.carbon.mediator.header.ui" />
+        <module name="org.wso2.carbon.mediator.in.ui" />
+        <module name="org.wso2.carbon.mediator.iterate.ui" />
+        <module name="org.wso2.carbon.mediator.log.ui" />
+        <module name="org.wso2.carbon.mediator.loopback.ui" />
+        <module name="org.wso2.carbon.mediator.oauth.ui" />
+        <module name="org.wso2.carbon.mediator.out.ui" />
+        <module name="org.wso2.carbon.mediator.payloadfactory.ui" />
+        <module name="org.wso2.carbon.mediator.property.ui" />
+        <module name="org.wso2.carbon.mediator.respond.ui" />
+        <module name="org.wso2.carbon.mediator.rmsequence.ui" />
+        <module name="org.wso2.carbon.mediator.router.impl" />
+        <module name="org.wso2.carbon.mediator.router.ui" />
+        <module name="org.wso2.carbon.mediator.rule.ui" />
+        <module name="org.wso2.carbon.mediator.script.ui" />
+        <module name="org.wso2.carbon.mediator.send.ui" />
+        <module name="org.wso2.carbon.mediator.sequence.ui" />
+        <module name="org.wso2.carbon.mediator.smooks" />
+        <module name="org.wso2.carbon.mediator.smooks.ui" />
+        <module name="org.wso2.carbon.mediator.spring.ui" />
+        <module name="org.wso2.carbon.mediator.store.ui" />
+        <module name="org.wso2.carbon.mediator.switch.ui" />
+        <module name="org.wso2.carbon.mediator.target.ui" />
+        <module name="org.wso2.carbon.mediator.throttle.ui" />
+        <module name="org.wso2.carbon.mediator.transaction.ui" />
+        <module name="org.wso2.carbon.mediator.uiless.ui" />
+        <module name="org.wso2.carbon.mediator.urlrewrite.ui" />
+        <module name="org.wso2.carbon.mediator.validate.ui" />
+        <module name="org.wso2.carbon.mediator.xquery.ui" />
+        <module name="org.wso2.carbon.mediator.xslt.ui" />
+        <module name="org.wso2.carbon.registry.common" />
+        <module name="org.wso2.carbon.registry.common (1)" />
+        <module name="org.wso2.carbon.registry.extensions" />
+        <module name="org.wso2.carbon.registry.extensions (1)" />
+        <module name="org.wso2.carbon.registry.resource" />
+        <module name="org.wso2.carbon.registry.ws.api" />
+        <module name="org.wso2.carbon.registry.ws.client" />
+        <module name="org.wso2.carbon.rssmanager.common" />
+        <module name="org.wso2.carbon.rssmanager.core" />
+        <module name="org.wso2.carbon.rssmanager.data.mgt" />
+        <module name="org.wso2.carbon.rssmanager.jpa.common" />
+        <module name="org.wso2.carbon.rssmanager.ui" />
+        <module name="org.wso2.carbon.sts" />
+        <module name="org.wso2.carbon.sts (1)" />
+        <module name="org.wso2.carbon.sts.ui" />
+        <module name="org.wso2.carbon.tenant.mgt" />
+        <module name="org.wso2.carbon.tenant.mgt.ui" />
+        <module name="org.wso2.carbon.um.ws.service" />
+        <module name="org.wso2.carbon.unifiedendpoint.core" />
+        <module name="org.wso2.carbon.unifiedendpoint.core (1)" />
+        <module name="org.wso2.carbon.unifiedendpoint.service" />
+        <module name="org.wso2.carbon.unifiedendpoint.ui" />
+        <module name="org.wso2.carbon.user.mgt" />
+        <module name="org.wso2.carbon.user.mgt.common" />
+        <module name="org.wso2.carbon.webapp.deployer" />
+        <module name="org.wso2.carbon.webapp.mgt" />
+        <module name="org.wso2.carbon.webapp.mgt (1)" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="aggregate-mediator" target="1.6" />
+      <module name="appfactory" target="1.6" />
+      <module name="appfactory (1)" target="1.6" />
+      <module name="appfactory (2)" target="1.6" />
+      <module name="appfactory-authentication-plugin" target="1.5" />
+      <module name="appfactory-authentication-plugin (2)" target="1.5" />
+      <module name="appfactory-integration" target="1.6" />
+      <module name="appfactory-integration (2)" target="1.6" />
+      <module name="appfactory-plugin" target="1.5" />
+      <module name="appfactory-plugin (2)" target="1.5" />
+      <module name="appfactory.gitblit.plugin" target="1.6" />
+      <module name="appfactory.gitblit.plugin (1)" target="1.6" />
+      <module name="appfactory.gitblit.plugin (2)" target="1.6" />
+      <module name="appmgt" target="1.6" />
+      <module name="appmgt (1)" target="1.6" />
+      <module name="bam-mediator" target="1.6" />
+      <module name="bean-mediator" target="1.6" />
+      <module name="cache-mediator" target="1.6" />
+      <module name="call-mediator" target="1.6" />
+      <module name="callout-mediator" target="1.6" />
+      <module name="calltemplate-mediator" target="1.6" />
+      <module name="carbon-dependents" target="1.6" />
+      <module name="class-mediator" target="1.6" />
+      <module name="clone-mediator" target="1.6" />
+      <module name="cloud-mgt" target="1.6" />
+      <module name="cloud-mgt (2)" target="1.6" />
+      <module name="command-mediator" target="1.6" />
+      <module name="conditionalrouter-mediator" target="1.6" />
+      <module name="dblookup-mediator" target="1.6" />
+      <module name="dbreport-mediator" target="1.6" />
+      <module name="drop-mediator" target="1.6" />
+      <module name="dynamic-slave" target="1.5" />
+      <module name="dynamic-slave (2)" target="1.5" />
+      <module name="ejb-mediator" target="1.6" />
+      <module name="enqueue-mediator" target="1.6" />
+      <module name="enrich-mediator" target="1.6" />
+      <module name="entitlement-mediator" target="1.6" />
+      <module name="event-mediator" target="1.6" />
+      <module name="fastXSLT-mediator" target="1.6" />
+      <module name="fault-mediator" target="1.6" />
+      <module name="filter-mediator" target="1.6" />
+      <module name="header-mediator" target="1.6" />
+      <module name="in-mediator" target="1.6" />
+      <module name="issue-tracker" target="1.6" />
+      <module name="iterate-mediator" target="1.6" />
+      <module name="log-mediator" target="1.6" />
+      <module name="loopback-mediator" target="1.6" />
+      <module name="mediators" target="1.6" />
+      <module name="oauth-mediator" target="1.6" />
+      <module name="org.wso2.appfactory.integration.admin.clients" target="1.6" />
+      <module name="org.wso2.appfactory.integration.admin.clients (2)" target="1.6" />
+      <module name="org.wso2.appfactory.integration.test.utils" target="1.6" />
+      <module name="org.wso2.appfactory.integration.test.utils (2)" target="1.6" />
+      <module name="org.wso2.appfactory.tests.scenarios" target="1.6" />
+      <module name="org.wso2.appfactory.tests.scenarios (2)" target="1.6" />
+      <module name="org.wso2.carbon.apimgt.gateway" target="1.5" />
+      <module name="org.wso2.carbon.appfactory.apiManager.integration" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.apiManager.integration (1)" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.apiManager.integration (2)" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.application.mgt" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.application.mgt (1)" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.application.mgt (2)" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.appserver.deployment.listener" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.bam.integration" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.bam.integration (1)" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.bam.integration (2)" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.bps.ext" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.build" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.build (1)" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.build (2)" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.common" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.common (1)" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.common (2)" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.core" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.core (1)" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.core (2)" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.deployers" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.deployers (1)" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.deployers (2)" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.eventing" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.eventing (1)" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.eventing (2)" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.ext" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.ext (1)" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.ext (2)" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.hostobjects.configuration" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.hostobjects.configuration (1)" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.hostobjects.configuration (2)" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.issuetracking" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.issuetracking (1)" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.issuetracking (2)" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.jenkinsext" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.jenkinsext (2)" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.listners" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.listners (1)" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.listners (2)" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.login.ui" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.login.ui (1)" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.login.ui (2)" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.multitenant.jenkins" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.multitenant.jenkins (1)" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.multitenant.jenkins (2)" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.repository.mgt.service" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.repository.mgt.service (1)" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.repository.mgt.service (2)" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.s4.integration" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.s4.integration (1)" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.s4.integration (2)" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.stratos.listners" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.stratos.listners (1)" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.stratos.listners (2)" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.tenant.mgt" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.tenant.mgt (1)" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.tenant.mgt (2)" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.tenant.roles" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.user.registration" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.userstore" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.userstore (1)" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.userstore (2)" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.utilities" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.utilities (1)" target="1.6" />
+      <module name="org.wso2.carbon.appfactory.utilities (2)" target="1.6" />
+      <module name="org.wso2.carbon.cloudmgt.users" target="1.6" />
+      <module name="org.wso2.carbon.dataservices.common" target="1.6" />
+      <module name="org.wso2.carbon.dataservices.core" target="1.6" />
+      <module name="org.wso2.carbon.deployment.synchronizer" target="1.6" />
+      <module name="org.wso2.carbon.deployment.synchronizer (1)" target="1.6" />
+      <module name="org.wso2.carbon.governance.custom.lifecycles.checklist" target="1.6" />
+      <module name="org.wso2.carbon.governance.registry.extensions" target="1.6" />
+      <module name="org.wso2.carbon.identity.application.authentication.framework" target="1.6" />
+      <module name="org.wso2.carbon.identity.application.authentication.framework (1)" target="1.6" />
+      <module name="org.wso2.carbon.identity.authenticator.cloud" target="1.6" />
+      <module name="org.wso2.carbon.identity.authenticator.mutualssl" target="1.6" />
+      <module name="org.wso2.carbon.identity.authenticator.saml2.sso" target="1.6" />
+      <module name="org.wso2.carbon.identity.authenticator.saml2.sso (1)" target="1.6" />
+      <module name="org.wso2.carbon.identity.authenticator.saml2.sso (2)" target="1.6" />
+      <module name="org.wso2.carbon.identity.authenticator.saml2.sso.common" target="1.6" />
+      <module name="org.wso2.carbon.identity.authenticator.saml2.sso.common (1)" target="1.6" />
+      <module name="org.wso2.carbon.identity.authenticator.saml2.sso.common (2)" target="1.6" />
+      <module name="org.wso2.carbon.identity.authenticator.selfsignedjwt" target="1.6" />
+      <module name="org.wso2.carbon.identity.authenticator.signedjwt" target="1.6" />
+      <module name="org.wso2.carbon.identity.entitlement.mediator" target="1.6" />
+      <module name="org.wso2.carbon.identity.entitlement.mediator (1)" target="1.6" />
+      <module name="org.wso2.carbon.identity.entitlement.mediator (2)" target="1.6" />
+      <module name="org.wso2.carbon.identity.oauth" target="1.6" />
+      <module name="org.wso2.carbon.issue.tracker" target="1.6" />
+      <module name="org.wso2.carbon.issue.tracker (1) (org.wso2.carbon)" target="1.6" />
+      <module name="org.wso2.carbon.issue.tracker (2)" target="1.6" />
+      <module name="org.wso2.carbon.issue.tracker.adapter" target="1.5" />
+      <module name="org.wso2.carbon.issue.tracker.core" target="1.5" />
+      <module name="org.wso2.carbon.issue.tracker.mgt" target="1.5" />
+      <module name="org.wso2.carbon.issue.tracker.ui" target="1.6" />
+      <module name="org.wso2.carbon.jaxws.webapp.deployer" target="1.6" />
+      <module name="org.wso2.carbon.jaxws.webapp.mgt" target="1.6" />
+      <module name="org.wso2.carbon.jira.reporting" target="1.5" />
+      <module name="org.wso2.carbon.mediator.aggregate.ui" target="1.6" />
+      <module name="org.wso2.carbon.mediator.bam" target="1.6" />
+      <module name="org.wso2.carbon.mediator.bam.config" target="1.6" />
+      <module name="org.wso2.carbon.mediator.bam.config.ui" target="1.6" />
+      <module name="org.wso2.carbon.mediator.bam.ui" target="1.6" />
+      <module name="org.wso2.carbon.mediator.bean.ui" target="1.6" />
+      <module name="org.wso2.carbon.mediator.cache.ui" target="1.6" />
+      <module name="org.wso2.carbon.mediator.call.ui" target="1.6" />
+      <module name="org.wso2.carbon.mediator.callout.ui" target="1.6" />
+      <module name="org.wso2.carbon.mediator.calltemplate.ui" target="1.6" />
+      <module name="org.wso2.carbon.mediator.clazz.services" target="1.6" />
+      <module name="org.wso2.carbon.mediator.clazz.ui" target="1.6" />
+      <module name="org.wso2.carbon.mediator.clone.ui" target="1.6" />
+      <module name="org.wso2.carbon.mediator.command.services" target="1.6" />
+      <module name="org.wso2.carbon.mediator.command.ui" target="1.6" />
+      <module name="org.wso2.carbon.mediator.conditionalrouter.ui" target="1.5" />
+      <module name="org.wso2.carbon.mediator.dblookup.ui" target="1.6" />
+      <module name="org.wso2.carbon.mediator.dbreport.ui" target="1.6" />
+      <module name="org.wso2.carbon.mediator.drop.ui" target="1.6" />
+      <module name="org.wso2.carbon.mediator.ejb.ui" target="1.6" />
+      <module name="org.wso2.carbon.mediator.enqueue.ui" target="1.6" />
+      <module name="org.wso2.carbon.mediator.enrich.ui" target="1.6" />
+      <module name="org.wso2.carbon.mediator.entitlement.ui" target="1.6" />
+      <module name="org.wso2.carbon.mediator.event" target="1.6" />
+      <module name="org.wso2.carbon.mediator.event.ui" target="1.6" />
+      <module name="org.wso2.carbon.mediator.fastXSLT" target="1.6" />
+      <module name="org.wso2.carbon.mediator.fastXSLT.ui" target="1.6" />
+      <module name="org.wso2.carbon.mediator.fault.ui" target="1.6" />
+      <module name="org.wso2.carbon.mediator.filter.ui" target="1.6" />
+      <module name="org.wso2.carbon.mediator.header.ui" target="1.6" />
+      <module name="org.wso2.carbon.mediator.in.ui" target="1.6" />
+      <module name="org.wso2.carbon.mediator.iterate.ui" target="1.6" />
+      <module name="org.wso2.carbon.mediator.log.ui" target="1.6" />
+      <module name="org.wso2.carbon.mediator.loopback.ui" target="1.6" />
+      <module name="org.wso2.carbon.mediator.oauth.ui" target="1.6" />
+      <module name="org.wso2.carbon.mediator.out.ui" target="1.6" />
+      <module name="org.wso2.carbon.mediator.payloadfactory.ui" target="1.6" />
+      <module name="org.wso2.carbon.mediator.property.ui" target="1.6" />
+      <module name="org.wso2.carbon.mediator.respond.ui" target="1.6" />
+      <module name="org.wso2.carbon.mediator.rmsequence.ui" target="1.6" />
+      <module name="org.wso2.carbon.mediator.router.impl" target="1.6" />
+      <module name="org.wso2.carbon.mediator.router.ui" target="1.6" />
+      <module name="org.wso2.carbon.mediator.rule.ui" target="1.6" />
+      <module name="org.wso2.carbon.mediator.script.ui" target="1.6" />
+      <module name="org.wso2.carbon.mediator.send.ui" target="1.6" />
+      <module name="org.wso2.carbon.mediator.sequence.ui" target="1.6" />
+      <module name="org.wso2.carbon.mediator.smooks" target="1.6" />
+      <module name="org.wso2.carbon.mediator.smooks.ui" target="1.6" />
+      <module name="org.wso2.carbon.mediator.spring.ui" target="1.6" />
+      <module name="org.wso2.carbon.mediator.store.ui" target="1.6" />
+      <module name="org.wso2.carbon.mediator.switch.ui" target="1.6" />
+      <module name="org.wso2.carbon.mediator.target.ui" target="1.6" />
+      <module name="org.wso2.carbon.mediator.throttle.ui" target="1.6" />
+      <module name="org.wso2.carbon.mediator.transaction.ui" target="1.6" />
+      <module name="org.wso2.carbon.mediator.uiless.ui" target="1.6" />
+      <module name="org.wso2.carbon.mediator.urlrewrite.ui" target="1.6" />
+      <module name="org.wso2.carbon.mediator.validate.ui" target="1.6" />
+      <module name="org.wso2.carbon.mediator.xquery.ui" target="1.6" />
+      <module name="org.wso2.carbon.mediator.xslt.ui" target="1.6" />
+      <module name="org.wso2.carbon.registry.common" target="1.6" />
+      <module name="org.wso2.carbon.registry.common (1)" target="1.6" />
+      <module name="org.wso2.carbon.registry.extensions" target="1.6" />
+      <module name="org.wso2.carbon.registry.extensions (1)" target="1.6" />
+      <module name="org.wso2.carbon.registry.resource" target="1.6" />
+      <module name="org.wso2.carbon.registry.ws.api" target="1.6" />
+      <module name="org.wso2.carbon.registry.ws.client" target="1.6" />
+      <module name="org.wso2.carbon.rssmanager.common" target="1.6" />
+      <module name="org.wso2.carbon.rssmanager.core" target="1.6" />
+      <module name="org.wso2.carbon.rssmanager.data.mgt" target="1.6" />
+      <module name="org.wso2.carbon.rssmanager.jpa.common" target="1.6" />
+      <module name="org.wso2.carbon.rssmanager.ui" target="1.6" />
+      <module name="org.wso2.carbon.sts" target="1.6" />
+      <module name="org.wso2.carbon.sts (1)" target="1.6" />
+      <module name="org.wso2.carbon.sts.ui" target="1.6" />
+      <module name="org.wso2.carbon.tenant.mgt" target="1.5" />
+      <module name="org.wso2.carbon.tenant.mgt.ui" target="1.5" />
+      <module name="org.wso2.carbon.um.ws.service" target="1.6" />
+      <module name="org.wso2.carbon.unifiedendpoint.core" target="1.6" />
+      <module name="org.wso2.carbon.unifiedendpoint.core (1)" target="1.6" />
+      <module name="org.wso2.carbon.unifiedendpoint.core (3)" target="1.6" />
+      <module name="org.wso2.carbon.unifiedendpoint.service" target="1.6" />
+      <module name="org.wso2.carbon.unifiedendpoint.service (1)" target="1.6" />
+      <module name="org.wso2.carbon.unifiedendpoint.ui" target="1.6" />
+      <module name="org.wso2.carbon.unifiedendpoint.ui (1)" target="1.6" />
+      <module name="org.wso2.carbon.url.mapper" target="1.6" />
+      <module name="org.wso2.carbon.url.mapper (1)" target="1.6" />
+      <module name="org.wso2.carbon.user.mgt" target="1.6" />
+      <module name="org.wso2.carbon.user.mgt.common" target="1.6" />
+      <module name="org.wso2.carbon.webapp.deployer" target="1.6" />
+      <module name="org.wso2.carbon.webapp.mgt" target="1.6" />
+      <module name="org.wso2.carbon.webapp.mgt (1)" target="1.6" />
+      <module name="org.wso2.carbon.webapp.mgt (2)" target="1.6" />
+      <module name="out-mediator" target="1.6" />
+      <module name="payloadfactory-mediator" target="1.6" />
+      <module name="property-mediator" target="1.6" />
+      <module name="respond-mediator" target="1.6" />
+      <module name="rmsequence-mediator" target="1.6" />
+      <module name="router-mediator" target="1.6" />
+      <module name="rule-mediator" target="1.6" />
+      <module name="script-mediator" target="1.6" />
+      <module name="send-mediator" target="1.6" />
+      <module name="sequence-mediator" target="1.6" />
+      <module name="smooks-mediator" target="1.6" />
+      <module name="spring-mediator" target="1.6" />
+      <module name="store-mediator" target="1.6" />
+      <module name="sts" target="1.6" />
+      <module name="switch-mediator" target="1.6" />
+      <module name="target-mediator" target="1.6" />
+      <module name="test-common" target="1.6" />
+      <module name="test-common (2)" target="1.6" />
+      <module name="throttle-mediator" target="1.6" />
+      <module name="transaction-mediator" target="1.6" />
+      <module name="uiless-mediator" target="1.6" />
+      <module name="unifiedendpoint" target="1.6" />
+      <module name="unifiedendpoint (1)" target="1.6" />
+      <module name="urlrewrite-mediator" target="1.6" />
+      <module name="validate-mediator" target="1.6" />
+      <module name="webapps-parent" target="1.6" />
+      <module name="webapps-parent (2)" target="1.6" />
+      <module name="wso2appfactory-parent" target="1.6" />
+      <module name="xquery-mediator" target="1.6" />
+      <module name="xslt-mediator" target="1.6" />
+    </bytecodeTargetLevel>
+  </component>
+</project>

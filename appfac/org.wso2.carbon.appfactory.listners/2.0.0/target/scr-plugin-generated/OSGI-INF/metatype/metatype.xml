@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?><metatype:MetaData xmlns:metatype="http://www.osgi.org/xmlns/metatype/v1.0.0" localization="OSGI-INF/metatype/metatype">
+    <OCD id="org.wso2.carbon.appfactory.listners" name="%org.wso2.carbon.appfactory.listners.name" description="%org.wso2.carbon.appfactory.listners.description"/>
+    <Designate pid="org.wso2.carbon.appfactory.listners">
+        <Object ocdref="org.wso2.carbon.appfactory.listners"/>
+    </Designate>
+</metatype:MetaData>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?><components xmlns:scr="http://www.osgi.org/xmlns/scr/v1.0.0">
+    <scr:component enabled="true" immediate="true" name="org.wso2.carbon.appfactory.jenkins.build.internal.JenkinsBuildServiceComponent">
+        <implementation class="org.wso2.carbon.appfactory.jenkins.build.internal.JenkinsBuildServiceComponent"/>
+        <property name="service.pid" value="org.wso2.carbon.appfactory.jenkins.build.internal.JenkinsBuildServiceComponent" private="false"/>
+        <reference name="appfactory.configuration" interface="org.wso2.carbon.appfactory.common.AppFactoryConfiguration" cardinality="1..1" policy="dynamic" bind="setAppFactoryConfiguration" unbind="unsetAppFactoryConfiguration" checked="true" strategy="event"/>
+        <reference name="repository.manager" interface="org.wso2.carbon.appfactory.repository.mgt.RepositoryManager" cardinality="1..1" policy="dynamic" bind="setRepositoryManager" unbind="unsetRepositoryManager" checked="true" strategy="event"/>
+        <reference name="app.type.manager" interface="org.wso2.carbon.appfactory.common.ApplicationTypeManager" cardinality="1..1" policy="dynamic" bind="setApplicationTypeManager" unbind="unsetApplicationTypeManager" checked="true" strategy="event"/>
+        <reference name="user.realmservice.default" interface="org.wso2.carbon.user.core.service.RealmService" cardinality="1..1" policy="dynamic" bind="setRealmService" unbind="unsetRealmService" checked="true" strategy="event"/>
+        <reference name="registry.loader.default" interface="org.wso2.carbon.registry.core.service.TenantRegistryLoader" cardinality="1..1" policy="dynamic" bind="setRegistryLoader" unbind="unsetRegistryLoader" checked="true" strategy="event"/>
+    </scr:component>
+    <scr:component enabled="true" immediate="true" name="appfactory.common">
+        <implementation class="org.wso2.carbon.appfactory.maven.build.internal.MavenBuildServiceComponent"/>
+        <property name="service.pid" value="appfactory.common" private="false"/>
+    </scr:component>
+</components>

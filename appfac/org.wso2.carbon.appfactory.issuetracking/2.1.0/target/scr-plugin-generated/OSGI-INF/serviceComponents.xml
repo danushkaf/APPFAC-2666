@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?><components xmlns:scr="http://www.osgi.org/xmlns/scr/v1.0.0">
+    <scr:component enabled="true" immediate="true" name="org.wso2.carbon.issutracker">
+        <implementation class="org.wso2.carbon.appfactory.issuetracking.internal.IssueTrackerServiceComponent"/>
+        <property name="service.pid" value="org.wso2.carbon.issutracker"/>
+        <reference name="appfactory.configuration" interface="org.wso2.carbon.appfactory.common.AppFactoryConfiguration" cardinality="1..1" policy="dynamic" bind="setAppFactoryConfiguration" unbind="unsetAppFactoryConfiguration"/>
+        <reference name="appfactory.application.mgt.service" interface="org.wso2.carbon.appfactory.application.mgt.service.ApplicationManagementService" cardinality="1..1" policy="dynamic" bind="setApplicationManagementService" unbind="unsetApplicationManagementService"/>
+    </scr:component>
+</components>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?><components xmlns:scr="http://www.osgi.org/xmlns/scr/v1.0.0">
+    <scr:component enabled="true" immediate="true" name="org.wso2.carbon.appfactory.repository.mgt">
+        <implementation class="org.wso2.carbon.appfactory.repository.mgt.internal.RepositoryMgtServiceComponent"/>
+        <property name="service.pid" value="org.wso2.carbon.appfactory.repository.mgt"/>
+        <reference name="appfactory.configuration" interface="org.wso2.carbon.appfactory.common.AppFactoryConfiguration" cardinality="1..1" policy="dynamic" bind="setAppFactoryConfiguration" unbind="unsetAppFactoryConfiguration"/>
+        <reference name="user.realmservice.default" interface="org.wso2.carbon.user.core.service.RealmService" cardinality="1..1" policy="dynamic" bind="setRealmService" unbind="unsetRealmService"/>
+        <reference name="appversion.executor" interface="org.wso2.carbon.appfactory.utilities.version.AppVersionStrategyExecutor" cardinality="1..1" policy="dynamic" bind="setAppVersionStrategyExecutor" unbind="unsetAppVersionStrategyExecutor"/>
+        <reference name="app.type.manager" interface="org.wso2.carbon.appfactory.common.ApplicationTypeManager" cardinality="1..1" policy="dynamic" bind="setApplicationTypeManager" unbind="unsetApplicationTypeManager"/>
+        <reference name="appfactory.tenant.mgt.service" interface="org.wso2.carbon.appfactory.tenant.mgt.service.TenantManagementService" cardinality="0..1" policy="dynamic" bind="setTenantManagementService" unbind="unsetTenantManagementService"/>
+    </scr:component>
+</components>

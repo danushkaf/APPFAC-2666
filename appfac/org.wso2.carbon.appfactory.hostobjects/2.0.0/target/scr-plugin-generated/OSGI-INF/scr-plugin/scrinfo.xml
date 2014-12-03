@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?><components xmlns:scr="http://www.osgi.org/xmlns/scr/v1.0.0">
+    <scr:component enabled="true" immediate="true" name="org.wso2.carbon.appfactory.hostobjects.configuration.AppFactoryConfigurationHostObjectServiceComponent">
+        <implementation class="org.wso2.carbon.appfactory.hostobjects.configuration.AppFactoryConfigurationHostObjectServiceComponent"/>
+        <property name="service.pid" value="org.wso2.carbon.appfactory.hostobjects.configuration.AppFactoryConfigurationHostObjectServiceComponent" private="false"/>
+        <reference name="appfactory.common" interface="org.wso2.carbon.appfactory.common.AppFactoryConfiguration" cardinality="1..1" policy="dynamic" bind="setAppFactoryConfiguration" unbind="unsetAppFactoryConfiguration" checked="true" strategy="event"/>
+    </scr:component>
+</components>

@@ -1,0 +1,20 @@
+Index: src/main/java/org/wso2/carbon/appfactory/stratos/internal/AppFactoryS4ListenersServiceComponent.java
+===================================================================
+--- src/main/java/org/wso2/carbon/appfactory/stratos/internal/AppFactoryS4ListenersServiceComponent.java	(revision 209903)
++++ src/main/java/org/wso2/carbon/appfactory/stratos/internal/AppFactoryS4ListenersServiceComponent.java	(working copy)
+@@ -67,14 +67,9 @@
+     protected void activate(ComponentContext context) {
+ 
+         try {
+-
+         	context.getBundleContext().registerService(TenantMgtListener.class.getName(),
+         	                               			new CloudEnvironmentPermissionListener(),null);
+-        	
+-        	context.getBundleContext().registerService(TenantMgtListener.class.getName(),
+-        			new AppFactoryTenantKeyStoreMgtListener(),null);
+ 
+-
+             if (log.isDebugEnabled()) {
+                 log.debug("DefaultRolesCreatorServiceComponent Service  bundle is activated");
+             }
+

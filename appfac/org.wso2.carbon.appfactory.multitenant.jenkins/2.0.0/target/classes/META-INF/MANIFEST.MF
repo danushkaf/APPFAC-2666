@@ -1,0 +1,32 @@
+Manifest-Version: 1.0
+Service-Component: OSGI-INF/serviceComponents.xml
+Export-Package: org.wso2.carbon.appfactory.tenant.build.integration.in
+ ternal;uses:="org.wso2.carbon.appfactory.tenant.build.integration.uti
+ ls";version="2.0.0",org.wso2.carbon.appfactory.tenant.build.integrati
+ on.uploder;uses:="org.wso2.carbon.appfactory.tenant.build.integration
+ .internal,org.wso2.carbon.appfactory.tenant.build.integration";versio
+ n="2.0.0",org.wso2.carbon.appfactory.tenant.build.integration;uses:="
+ org.wso2.carbon.appfactory.tenant.build.integration.uploder,org.wso2.
+ carbon.appfactory.tenant.build.integration.buildserver,org.wso2.carbo
+ n.appfactory.tenant.build.integration.utils";version="2.0.0",org.wso2
+ .carbon.appfactory.tenant.build.integration.buildserver;uses:="org.ws
+ o2.carbon.appfactory.tenant.build.integration,org.wso2.carbon.appfact
+ ory.tenant.build.integration.internal,org.wso2.carbon.appfactory.tena
+ nt.build.integration.utils";version="2.0.0",org.wso2.carbon.appfactor
+ y.tenant.build.integration.utils;version="2.0.0"
+Built-By: wdfdo1986
+Tool: Bnd-1.43.0
+Bundle-Name: org.wso2.carbon.appfactory.multitenant.jenkins
+Created-By: Apache Maven Bundle Plugin
+Bundle-Vendor: WSO2 Inc
+DynamicImport-Package: *
+Build-Jdk: 1.7.0_51
+Bundle-Version: 2.0.0
+Bnd-LastModified: 1401687125043
+Bundle-ManifestVersion: 2
+Bundle-License: http://www.apache.org/licenses/LICENSE-2.0
+Bundle-Description: WSO2 Appfactory - tenant based build server deploy
+ ment component
+Bundle-DocURL: http://wso2.org
+Bundle-SymbolicName: org.wso2.carbon.appfactory.multitenant.jenkins
+

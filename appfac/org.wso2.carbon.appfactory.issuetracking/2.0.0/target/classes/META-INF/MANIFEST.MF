@@ -1,0 +1,60 @@
+Manifest-Version: 1.0
+Service-Component: OSGI-INF/serviceComponents.xml
+Export-Package: org.wso2.carbon.appfactory.issuetracking.internal;uses
+ :="org.wso2.carbon.appfactory.core,org.apache.commons.logging,org.osg
+ i.framework,org.wso2.carbon.appfactory.issuetracking,org.wso2.carbon.
+ appfactory.application.mgt.service,org.wso2.carbon.appfactory.common,
+ org.osgi.service.component";version="2.0.0",org.wso2.carbon.appfactor
+ y.issuetracking.exception;version="2.0.0",org.wso2.carbon.appfactory.
+ issuetracking.beans;uses:="org.wso2.carbon.appfactory.issuetracking.e
+ xception,org.wso2.carbon.appfactory.issuetracking,org.wso2.carbon.app
+ factory.common";version="2.0.0",org.wso2.carbon.appfactory.issuetrack
+ ing.service;uses:="org.wso2.carbon.appfactory.issuetracking.exception
+ ,org.wso2.carbon.appfactory.issuetracking,org.wso2.carbon.appfactory.
+ issuetracking.beans";version="2.0.0",org.wso2.carbon.appfactory.issue
+ tracking;uses:="org.wso2.carbon.appfactory.issuetracking.beans,org.ws
+ o2.carbon.appfactory.common,org.wso2.carbon.appfactory.core.dto,org.a
+ pache.commons.logging,org.wso2.carbon.appfactory.core,org.wso2.carbon
+ .appfactory.issuetracking.exception,org.wso2.carbon.appfactory.eventi
+ ng,javax.activation,org.apache.commons.httpclient.methods,org.wso2.ca
+ rbon.appfactory.common.util,org.json.simple.parser,org.json.simple,or
+ g.apache.commons.httpclient";version="2.0.0"
+Bundle-ClassPath: .,redmine-java-api-1.15.jar,httpclient-4.2.jar,httpc
+ lient-4.2.3.wso2v1.jar,httpcore-4.2.jar,httpcore-4.1.0-wso2v1.jar
+Built-By: wdfdo1986
+Tool: Bnd-1.43.0
+Bundle-Name: WSO2 Appfactory - Issue Tracking
+Created-By: Apache Maven Bundle Plugin
+Bundle-Vendor: WSO2 Inc
+DynamicImport-Package: *
+Build-Jdk: 1.7.0_51
+Bundle-Version: 2.0.0
+Embed-Transitive: true
+Bnd-LastModified: 1401687118924
+Bundle-ManifestVersion: 2
+Bundle-License: http://www.apache.org/licenses/LICENSE-2.0
+Bundle-Description: Appfactory common BE component for WSO2 Appfactory
+  Issue Tracking
+Bundle-SymbolicName: org.wso2.carbon.appfactory.issuetracking
+Embed-Dependency: redmine-java-api,httpclient,httpcore
+Import-Package: javax.activation;resolution:=optional;version="[1.1,2)
+ ",javax.crypto;resolution:=optional,javax.crypto.spec;resolution:=opt
+ ional,javax.net.ssl;resolution:=optional,javax.security.auth.x500;res
+ olution:=optional,javax.xml.namespace;version="0.0.0",org.apache.comm
+ ons.codec.binary;resolution:=optional;version="[1.6,2)",org.apache.co
+ mmons.httpclient;resolution:=optional,org.apache.commons.httpclient.m
+ ethods;resolution:=optional,org.apache.commons.logging;resolution:=op
+ tional;version="[1.1,2)",org.ietf.jgss;resolution:=optional,org.json;
+ resolution:=optional;version="[2.0,3)",org.json.simple;resolution:=op
+ tional,org.json.simple.parser;resolution:=optional,org.osgi.framework
+ ;resolution:=optional;version="[1.7,2)",org.osgi.service.component;re
+ solution:=optional;version="[1.2,2)",org.slf4j;resolution:=optional;v
+ ersion="[1.5,2)",org.wso2.carbon.appfactory.application.mgt.service;r
+ esolution:=optional;version="[2.0,3)",org.wso2.carbon.appfactory.comm
+ on;resolution:=optional;version="[2.0,3)",org.wso2.carbon.appfactory.
+ common.util;resolution:=optional;version="[2.0,3)",org.wso2.carbon.ap
+ pfactory.core;resolution:=optional;version="[2.0,3)",org.wso2.carbon.
+ appfactory.core.dto;resolution:=optional;version="[2.0,3)",org.wso2.c
+ arbon.appfactory.eventing;resolution:=optional;version="[2.0,3)"
+Bundle-DocURL: http://wso2.org
+

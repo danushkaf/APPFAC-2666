@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="" vcs="svn" />
+    <mapping directory="$USER_HOME$/Data/App_Factory_Setup/2.0.0/appfactory_deployment_s4/setup/appfactory/wso2appfactory-2.0.0/repository/deployment/server/jaggeryapps" vcs="svn" />
+    <mapping directory="$PROJECT_DIR$/../../../../git_repos/appmgt" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../../../appfactory_2.0.0/components/appfac" vcs="svn" />
+    <mapping directory="$PROJECT_DIR$/.." vcs="svn" />
+    <mapping directory="$PROJECT_DIR$/../../products/appfactory/2.0.0/modules/webapps" vcs="svn" />
+    <mapping directory="$PROJECT_DIR$/../../products/appfactory/2.1.0/modules/integration" vcs="svn" />
+    <mapping directory="$PROJECT_DIR$/../../products/appfactory/2.1.0/modules/jaggery-apps/issuetracker" vcs="svn" />
+    <mapping directory="$PROJECT_DIR$/../../products/appfactory/2.1.0/modules/webapps" vcs="svn" />
+    <mapping directory="$PROJECT_DIR$/../../../../support/4.0.0/platform/components/unified-endpoint" vcs="svn" />
+  </component>
+</project>

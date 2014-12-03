@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?><metatype:MetaData xmlns:metatype="http://www.osgi.org/xmlns/metatype/v1.0.0" localization="OSGI-INF/metatype/metatype">
+    <OCD id="appfactory.common" name="%appfactory.common.name" description="%appfactory.common.description"/>
+    <Designate pid="appfactory.common">
+        <Object ocdref="appfactory.common"/>
+    </Designate>
+</metatype:MetaData>

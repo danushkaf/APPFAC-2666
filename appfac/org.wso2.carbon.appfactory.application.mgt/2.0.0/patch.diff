@@ -1,0 +1,98 @@
+Index: pom.xml
+===================================================================
+--- pom.xml	(revision 202714)
++++ pom.xml	(working copy)
+@@ -110,6 +110,11 @@
+             <artifactId>org.wso2.carbon.appfactory.tenant.mgt</artifactId>
+             <version>${project.version}</version>
+         </dependency>
++        <dependency>
++            <groupId>org.wso2.carbon</groupId>
++            <artifactId>org.wso2.carbon.registry.core</artifactId>
++            <version>4.2.0</version>
++        </dependency>
+     </dependencies>
+ 
+     <build>
+Index: src/main/java/org/wso2/carbon/appfactory/application/mgt/service/ApplicationManagementService.java
+===================================================================
+--- src/main/java/org/wso2/carbon/appfactory/application/mgt/service/ApplicationManagementService.java	(revision 202714)
++++ src/main/java/org/wso2/carbon/appfactory/application/mgt/service/ApplicationManagementService.java	(working copy)
+@@ -16,10 +16,6 @@
+ 
+ package org.wso2.carbon.appfactory.application.mgt.service;
+ 
+-import java.io.IOException;
+-import java.io.InputStreamReader;
+-import java.util.*;
+-
+ import org.apache.commons.logging.Log;
+ import org.apache.commons.logging.LogFactory;
+ import org.wso2.carbon.CarbonConstants;
+@@ -42,9 +38,7 @@
+ import org.wso2.carbon.appfactory.eventing.Event;
+ import org.wso2.carbon.appfactory.eventing.EventBuilderUtil;
+ import org.wso2.carbon.appfactory.eventing.EventNotifier;
+-import org.wso2.carbon.appfactory.jenkins.build.JenkinsApplicationEventsListener;
+ import org.wso2.carbon.appfactory.jenkins.build.JenkinsCISystemDriver;
+-import org.wso2.carbon.appfactory.nonbuild.NonBuildableApplicationEventListner;
+ import org.wso2.carbon.appfactory.utilities.project.ProjectUtils;
+ import org.wso2.carbon.appfactory.utilities.services.EmailSenderService;
+ import org.wso2.carbon.context.CarbonContext;
+@@ -53,19 +47,16 @@
+ import org.wso2.carbon.governance.api.exception.GovernanceException;
+ import org.wso2.carbon.governance.api.generic.GenericArtifactManager;
+ import org.wso2.carbon.governance.api.generic.dataobjects.GenericArtifact;
+-import org.wso2.carbon.registry.core.ActionConstants;
+-import org.wso2.carbon.registry.core.RegistryConstants;
++import org.wso2.carbon.registry.core.*;
++import org.wso2.carbon.registry.core.Collection;
+ import org.wso2.carbon.registry.core.exceptions.RegistryException;
+ import org.wso2.carbon.registry.core.service.RegistryService;
+ import org.wso2.carbon.registry.core.session.UserRegistry;
+-import org.wso2.carbon.user.api.AuthorizationManager;
+-import org.wso2.carbon.user.api.Tenant;
+-import org.wso2.carbon.user.api.TenantManager;
+-import org.wso2.carbon.user.api.UserRealm;
+-import org.wso2.carbon.user.api.UserStoreException;
+-import org.wso2.carbon.user.api.UserStoreManager;
++import org.wso2.carbon.user.api.*;
+ import org.wso2.carbon.user.core.service.RealmService;
+ 
++import java.util.*;
++
+ public class ApplicationManagementService extends AbstractAdmin {
+ 
+ 	private static Log log = LogFactory.getLog(ApplicationManagementService.class);
+@@ -787,14 +778,30 @@
+             RegistryService registryService = ServiceHolder.getRegistryService();
+             UserRegistry userRegistry = registryService.getGovernanceSystemRegistry(tenantId);
+ 
++	        log.info("Registry user is : " + userRegistry.getUserName());
++
+             if (userRegistry.resourceExists(resourcePath)) {
+-               userRegistry.delete(resourcePath);
++	            deleteResource(resourcePath, userRegistry);
+             }
++	        userRegistry.resourceExists(resourcePath + "/appinfo");
+ 
+         } finally {
+             PrivilegedCarbonContext.endTenantFlow();
+         }
+     }
++
++	private void deleteResource(String path, Registry registry) throws RegistryException {
++		if (registry.resourceExists(path)) {
++			Resource resource = registry.get(path);
++			if (resource instanceof org.wso2.carbon.registry.core.Collection) {
++				String[] children = ((Collection) resource).getChildren();
++				for(String child : children){
++					deleteResource(child, registry);
++				}
++			}
++			registry.delete(path);
++		}
++	}
+     
+     public String[] getAllCreatedApplications() throws ApplicationManagementException {
+ 		String apps[] = new String[0];

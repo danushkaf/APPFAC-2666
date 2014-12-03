@@ -1,0 +1,61 @@
+Manifest-Version: 1.0
+Service-Component: OSGI-INF/serviceComponents.xml
+Export-Package: org.wso2.carbon.appfactory.apiManager.integration.util
+ s;uses:="org.wso2.carbon.appfactory.core.dto,org.apache.http.message,
+ org.apache.commons.logging,org.apache.http.client.utils,org.apache.ht
+ tp.client,org.apache.commons.codec.binary,org.wso2.carbon.registry.co
+ re.exceptions,org.wso2.carbon.registry.core,org.wso2.carbon.appfactor
+ y.apiManager.integration.internal,org.apache.http.util,com.google.gso
+ n,org.apache.http.client.methods,org.wso2.carbon.appfactory.common,or
+ g.apache.http";version="2.0.0",org.wso2.carbon.appfactory.apiManager.
+ integration;uses:="org.wso2.carbon.appfactory.core.dto,org.apache.axi
+ s2.transport.http,org.apache.http.message,org.wso2.carbon.appfactory.
+ core,org.apache.commons.logging,org.wso2.carbon.core,org.apache.http.
+ client,org.apache.axis2.context,org.wso2.carbon.context,org.wso2.carb
+ on.appfactory.apiManager.integration.utils,org.apache.http.impl.clien
+ t,org.apache.http.conn,org.apache.http.client.methods,com.google.gson
+ ,org.apache.http.util,org.wso2.carbon.appfactory.common,org.apache.ht
+ tp,javax.servlet.http";version="2.0.0",org.wso2.carbon.appfactory.api
+ Manager.integration.internal;uses:="org.wso2.carbon.registry.core.ser
+ vice,org.apache.commons.logging,org.wso2.carbon.user.core.service,org
+ .osgi.framework,org.wso2.carbon.appfactory.common,org.osgi.service.co
+ mponent";version="2.0.0"
+Built-By: wdfdo1986
+Tool: Bnd-1.43.0
+Bundle-Name: WSO2 Appfactory - API Manager Integration
+Created-By: Apache Maven Bundle Plugin
+Bundle-Vendor: WSO2 Inc
+DynamicImport-Package: *
+Build-Jdk: 1.7.0_51
+Bundle-Version: 2.0.0
+Bnd-LastModified: 1401687123352
+Bundle-ManifestVersion: 2
+Bundle-License: http://www.apache.org/licenses/LICENSE-2.0
+Bundle-Description: Appfactory integration module for API Manager
+Import-Package: com.google.gson;resolution:=optional;version="[2.1,3)"
+ ,javax.servlet.http;resolution:=optional;version="[2.6,3)",javax.xml.
+ namespace;version="0.0.0",org.apache.axis2.context;resolution:=option
+ al;version="[1.6,2)",org.apache.axis2.transport.http;resolution:=opti
+ onal;version="[1.6,2)",org.apache.commons.codec.binary;resolution:=op
+ tional,org.apache.commons.logging;resolution:=optional;version="[1.1,
+ 2)",org.apache.http;resolution:=optional,org.apache.http.client;resol
+ ution:=optional;version="[4.1,5)",org.apache.http.client.methods;reso
+ lution:=optional;version="[4.1,5)",org.apache.http.client.utils;resol
+ ution:=optional;version="[4.1,5)",org.apache.http.conn;resolution:=op
+ tional;version="[4.1,5)",org.apache.http.impl.client;resolution:=opti
+ onal;version="[4.1,5)",org.apache.http.message;resolution:=optional,o
+ rg.apache.http.util;resolution:=optional,org.osgi.framework;resolutio
+ n:=optional;version="[1.7,2)",org.osgi.service.component;resolution:=
+ optional;version="[1.2,2)",org.wso2.carbon.appfactory.common;resoluti
+ on:=optional;version="[2.0,3)",org.wso2.carbon.appfactory.core;resolu
+ tion:=optional;version="[2.0,3)",org.wso2.carbon.appfactory.core.dto;
+ resolution:=optional;version="[2.0,3)",org.wso2.carbon.context;resolu
+ tion:=optional;version="[4.2,5)",org.wso2.carbon.core;resolution:=opt
+ ional;version="[4.2,5)",org.wso2.carbon.registry.core;resolution:=opt
+ ional;version="[1.0,2)",org.wso2.carbon.registry.core.exceptions;reso
+ lution:=optional;version="[1.0,2)",org.wso2.carbon.registry.core.serv
+ ice;resolution:=optional;version="[1.0,2)",org.wso2.carbon.user.core.
+ service;resolution:=optional;version="[4.2,5)"
+Bundle-DocURL: http://wso2.org
+Bundle-SymbolicName: org.wso2.carbon.appfactory.apiManager.integration
+

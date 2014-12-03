@@ -1,0 +1,30 @@
+Manifest-Version: 1.0
+Service-Component: OSGI-INF/serviceComponents.xml
+Export-Package: org.wso2.carbon.appfactory.s4.integration.cloud;uses:=
+ "org.wso2.carbon.appfactory.s4.integration.utils,org.wso2.carbon.appf
+ actory.s4.integration,org.wso2.carbon.appfactory.common";version="2.0
+ .0",org.wso2.carbon.appfactory.s4.integration.utils;uses:="org.wso2.c
+ arbon.appfactory.s4.integration.internal,org.wso2.carbon.appfactory.c
+ ommon,org.wso2.carbon.appfactory.s4.integration";version="2.0.0",org.
+ wso2.carbon.appfactory.s4.integration.internal;uses:="org.wso2.carbon
+ .appfactory.s4.integration.cloud,org.wso2.carbon.appfactory.s4.integr
+ ation,org.wso2.carbon.appfactory.common";version="2.0.0",org.wso2.car
+ bon.appfactory.s4.integration;uses:="org.wso2.carbon.appfactory.s4.in
+ tegration.internal,org.wso2.carbon.appfactory.common,org.wso2.carbon.
+ appfactory.s4.integration.utils";version="2.0.0"
+Built-By: wdfdo1986
+Tool: Bnd-1.43.0
+Bundle-Name: org.wso2.carbon.appfactory.s4.integration
+Created-By: Apache Maven Bundle Plugin
+Bundle-Vendor: WSO2 Inc
+DynamicImport-Package: *
+Build-Jdk: 1.7.0_51
+Bundle-Version: 2.0.0
+Bnd-LastModified: 1401687129336
+Bundle-ManifestVersion: 2
+Bundle-License: http://www.apache.org/licenses/LICENSE-2.0
+Bundle-Description: BE component for WSO2 Carbon
+Import-Package: org.wso2.carbon.appfactory.common;version="[2.0,3)"
+Bundle-DocURL: http://wso2.org
+Bundle-SymbolicName: org.wso2.carbon.appfactory.s4.integration
+

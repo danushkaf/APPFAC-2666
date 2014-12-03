@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<l:dependencies xmlns:l='licenses' groupId='org.jenkins.wso2.appfactory' artifactId='appfactory-authentication-plugin' version='2.1.0'><l:dependency name='appfactory-authentication-plugin' groupId='org.jenkins.wso2.appfactory' artifactId='appfactory-authentication-plugin' version='2.1.0' url='http://jenkins-ci.org/plugin/appfactory-authentication-plugin/'><l:description/></l:dependency></l:dependencies>

@@ -1,0 +1,1472 @@
+Index: org.wso2.carbon.appfactory.application.mgt/2.1.0/src/main/java/org/wso2/carbon/appfactory/application/mgt/type/AbstractApplicationTypeProcessor.java
+===================================================================
+--- org.wso2.carbon.appfactory.application.mgt/2.1.0/src/main/java/org/wso2/carbon/appfactory/application/mgt/type/AbstractApplicationTypeProcessor.java	(revision 209923)
++++ org.wso2.carbon.appfactory.application.mgt/2.1.0/src/main/java/org/wso2/carbon/appfactory/application/mgt/type/AbstractApplicationTypeProcessor.java	(working copy)
+@@ -16,13 +16,19 @@
+ 
+ package org.wso2.carbon.appfactory.application.mgt.type;
+ 
++import org.apache.axiom.om.OMElement;
++import org.apache.axiom.om.xpath.AXIOMXPath;
++import org.apache.commons.logging.Log;
++import org.apache.commons.logging.LogFactory;
++import org.wso2.carbon.appfactory.common.AppFactoryConstants;
+ import org.wso2.carbon.appfactory.common.AppFactoryException;
+ import org.wso2.carbon.appfactory.common.util.AppFactoryUtil;
+ import org.wso2.carbon.appfactory.core.apptype.ApplicationTypeProcessor;
+-
++import org.wso2.carbon.appfactory.jenkins.build.JenkinsCIConstants;
+ import java.io.File;
+ import java.util.ArrayList;
+ import java.util.List;
++import java.util.Map;
+ import java.util.Properties;
+ 
+ /**
+@@ -29,6 +35,7 @@
+  * Base class contains getters and setters
+  */
+ public abstract class AbstractApplicationTypeProcessor implements ApplicationTypeProcessor {
++    private static final Log log = LogFactory.getLog(AbstractApplicationTypeProcessor.class);
+     public static final String MAVEN_ARCHETYPE_REQUEST = "MavenArcheTypeRequest";
+     public static final String LAUNCH_URL_PATTERN = "LaunchURLPattern";
+     public static final String PARAM_TENANT_DOMAIN = "{tenantDomain}";
+@@ -75,7 +82,10 @@
+ 
+ 		try {
+ 			urlStageValue = (String) this.properties.get(stage + PARAM_APP_STAGE_NAME_SUFFIX);
+-		} catch (Exception e){}
++		} catch (Exception e){
++			// no need to throw just log and continue
++			log.error("Error while getting the url stage value fo application:" + applicationID, e);
++		}
+ 
+ 		if(urlStageValue == null){
+ 			urlStageValue = "";
+@@ -85,4 +95,61 @@
+ 		         .replace(PARAM_APP_VERSION, applicationVersion).replace(PARAM_APP_STAGE, urlStageValue);
+ 		return url;
+ 	}
++
++	/**
++	 * Add the repository related information to the jenkinsJobConfig file
++	 *
++	 * @param jobConfigTemplate template of config file
++	 * @param parameters        parameters to be added
++	 * @return the template after replacing the default values of repository related configurations
++	 * @throws AppFactoryException if an error occurs
++	 */
++	protected OMElement configureRepositoryData(OMElement jobConfigTemplate, Map<String, String> parameters)
++			throws AppFactoryException {
++		if (AppFactoryConstants.REPOSITORY_TYPE_GIT.equals(parameters.get(AppFactoryConstants.REPOSITORY_TYPE))) {
++			String url = parameters.get(AppFactoryConstants.REPOSITORY_URL);
++			setValueUsingXpath(jobConfigTemplate, AppFactoryConstants.GIT_REPOSITORY_XPATH_SELECTOR,
++			                   url);
++			String repositoryBranchName = parameters.get(AppFactoryConstants.APPLICATION_VERSION);
++			if (AppFactoryConstants.TRUNK.equals(repositoryBranchName)) {
++				repositoryBranchName = AppFactoryConstants.REPOSITORY_BRANCH_MASTER;
++			}
++			setValueUsingXpath(jobConfigTemplate,
++			                   AppFactoryConstants.GIT_REPOSITORY_VERSION_XPATH_SELECTOR,
++			                   repositoryBranchName);
++		} else {
++			setValueUsingXpath(jobConfigTemplate, AppFactoryConstants.SVN_REPOSITORY_XPATH_SELECTOR,
++			                   parameters.get(AppFactoryConstants.REPOSITORY_URL));
++		}
++		return jobConfigTemplate;
++	}
++
++	/**
++	 * Set values in OmElement
++	 *
++	 * @param template Jenkins job configuration template
++	 * @param selector Selector of the template
++	 * @param value    related value from the project
++	 * @throws AppFactoryException
++	 */
++	protected void setValueUsingXpath(OMElement template, String selector, String value)
++			throws AppFactoryException {
++
++		try {
++			AXIOMXPath axiomxPath = new AXIOMXPath(selector);
++			Object selectedObject = axiomxPath.selectSingleNode(template);
++
++			if (selectedObject != null && selectedObject instanceof OMElement) {
++				OMElement svnRepoPathElement = (OMElement) selectedObject;
++				svnRepoPathElement.setText(value);
++			} else {
++				log.warn("Unable to find xml element matching selector : " + selector);
++			}
++
++		} catch (Exception e) {
++			String msg = "Error while setting values using Xpath selector:" + selector;
++			log.error(msg, e);
++			throw new AppFactoryException(msg, e);
++		}
++	}
+ }
+Index: org.wso2.carbon.appfactory.application.mgt/2.1.0/src/main/java/org/wso2/carbon/appfactory/application/mgt/type/BPELApplicationTypeProcessor.java
+===================================================================
+--- org.wso2.carbon.appfactory.application.mgt/2.1.0/src/main/java/org/wso2/carbon/appfactory/application/mgt/type/BPELApplicationTypeProcessor.java	(revision 209923)
++++ org.wso2.carbon.appfactory.application.mgt/2.1.0/src/main/java/org/wso2/carbon/appfactory/application/mgt/type/BPELApplicationTypeProcessor.java	(working copy)
+@@ -16,11 +16,12 @@
+ 
+ package org.wso2.carbon.appfactory.application.mgt.type;
+ 
++import org.apache.axiom.om.OMElement;
+ import org.wso2.carbon.appfactory.common.AppFactoryException;
+ import org.wso2.carbon.appfactory.utilities.project.ProjectUtils;
+ import org.wso2.carbon.appfactory.utilities.version.AppVersionStrategyExecutor;
+-
+ import java.io.File;
++import java.util.Map;
+ 
+ /**
+  * BPEL Application type processor
+@@ -38,4 +39,12 @@
+         ProjectUtils.generateProjectArchetype(applicationId, workingDirectory,
+                 ProjectUtils.getArchetypeRequest(applicationId, getProperty(MAVEN_ARCHETYPE_REQUEST)));
+     }
++
++    @Override
++    public OMElement configureBuildJob(OMElement jobConfigTemplate, Map<String, String> parameters,
++                                       String projectType)
++            throws AppFactoryException {
++        //Currently does not have and bpel application type so no need to implement
++        return null;
++    }
+ }
+Index: org.wso2.carbon.appfactory.application.mgt/2.1.0/src/main/java/org/wso2/carbon/appfactory/application/mgt/type/DataServiceApplicationTypeProcessor.java
+===================================================================
+--- org.wso2.carbon.appfactory.application.mgt/2.1.0/src/main/java/org/wso2/carbon/appfactory/application/mgt/type/DataServiceApplicationTypeProcessor.java	(revision 209923)
++++ org.wso2.carbon.appfactory.application.mgt/2.1.0/src/main/java/org/wso2/carbon/appfactory/application/mgt/type/DataServiceApplicationTypeProcessor.java	(working copy)
+@@ -16,7 +16,9 @@
+ 
+ package org.wso2.carbon.appfactory.application.mgt.type;
+ 
++import org.apache.axiom.om.OMElement;
+ import org.apache.commons.io.FileUtils;
++import org.apache.commons.lang3.StringUtils;
+ import org.apache.commons.logging.Log;
+ import org.apache.commons.logging.LogFactory;
+ import org.apache.maven.model.Model;
+@@ -23,11 +25,12 @@
+ import org.wso2.carbon.appfactory.common.AppFactoryConstants;
+ import org.wso2.carbon.appfactory.common.AppFactoryException;
+ import org.wso2.carbon.appfactory.common.util.AppFactoryUtil;
++import org.wso2.carbon.appfactory.core.apptype.ApplicationTypeManager;
+ import org.wso2.carbon.appfactory.utilities.project.ProjectUtils;
+ import org.wso2.carbon.appfactory.utilities.version.AppVersionStrategyExecutor;
+-
+ import java.io.File;
+ import java.util.List;
++import java.util.Map;
+ 
+ /**
+  * Data service application type processor
+@@ -94,6 +97,66 @@
+ 		return url;
+ 	}
+ 
++	@Override
++	public OMElement configureBuildJob(OMElement jobConfigTemplate, Map<String, String> parameters,
++	                                   String projectType)
++			throws AppFactoryException {
++		if (jobConfigTemplate == null) {
++			String msg =
++					"Class loader is unable to find the jenkins job configuration template for data service application types";
++			log.error(msg);
++			throw new AppFactoryException(msg);
++		}
++
++		String artifactArchiver = null;
++		Object hudsonArtifactArchiver = ApplicationTypeManager.getInstance().getApplicationTypeBean(projectType)
++		                                                      .getProperty(
++				                                                      AppFactoryConstants.HUDSON_ARTIFACT_ARCHIVER);
++		if (hudsonArtifactArchiver != null) {
++			artifactArchiver = hudsonArtifactArchiver.toString();
++		}
++		jobConfigTemplate = configureRepositoryData(jobConfigTemplate, parameters);
++
++		// Support for post build listener residing in jenkins server
++		setValueUsingXpath(jobConfigTemplate,
++		                   AppFactoryConstants.PUBLISHERS_APPFACTORY_POST_BUILD_APP_EXTENSION_XPATH_SELECTOR,
++		                   parameters.get(AppFactoryConstants.APPTYPE_EXTENSION));
++
++		setValueUsingXpath(jobConfigTemplate,
++		                   AppFactoryConstants.PUBLISHERS_APPFACTORY_POST_BUILD_APP_ID_XPATH_SELECTOR,
++		                   parameters.get(AppFactoryConstants.APPLICATION_ID));
++
++		setValueUsingXpath(jobConfigTemplate,
++		                   AppFactoryConstants.PUBLISHERS_APPFACTORY_POST_BUILD_APP_VERSION_XPATH_SELECTOR,
++		                   parameters.get(AppFactoryConstants.APPLICATION_VERSION));
++
++		if (StringUtils.isNotBlank(artifactArchiver)) {
++			setValueUsingXpath(jobConfigTemplate,
++			                   AppFactoryConstants.ARTIFACT_ARCHIVER_CONFIG_NAME_XAPTH_SELECTOR,
++			                   artifactArchiver);
++		}
++
++		if (ApplicationTypeManager.getInstance().getApplicationTypeBean(projectType).isUploadableAppType()) {
++			setValueUsingXpath(jobConfigTemplate, AppFactoryConstants.ARTIFACT_ARCHIVER_CONFIG_NAME_XAPTH_SELECTOR,
++			                   AppFactoryConstants.DEFAULT_ARTIFACT_NAME +
++			                   ApplicationTypeManager.getInstance().getApplicationTypeBean(projectType)
++			                                         .getExtension());
++
++			String repositoryBranchName = parameters.get(AppFactoryConstants.APPLICATION_VERSION);
++			if (AppFactoryConstants.INITIAL_UPLOADED_APP_VERSION.equals(repositoryBranchName)) {
++				setValueUsingXpath(jobConfigTemplate, AppFactoryConstants.GIT_REPOSITORY_VERSION_XPATH_SELECTOR,
++				                   AppFactoryConstants.APPLICATION_VERSION_VALUE_FREESTYLE);
++			}
++		}
++
++		setValueUsingXpath(jobConfigTemplate,
++		                   AppFactoryConstants.APPLICATION_TRIGGER_PERIOD,
++		                   parameters.get(AppFactoryConstants.APPLICATION_POLLING_PERIOD));
++
++		return jobConfigTemplate;
++
++	}
++
+ 	private void configureFinalName(String path, String appId, String version) {
+ 		File artifactDir = new File(path);
+ 		Model model;
+Index: org.wso2.carbon.appfactory.application.mgt/2.1.0/src/main/java/org/wso2/carbon/appfactory/application/mgt/type/DotnetApplicationTypeProcessor.java
+===================================================================
+--- org.wso2.carbon.appfactory.application.mgt/2.1.0/src/main/java/org/wso2/carbon/appfactory/application/mgt/type/DotnetApplicationTypeProcessor.java	(revision 209923)
++++ org.wso2.carbon.appfactory.application.mgt/2.1.0/src/main/java/org/wso2/carbon/appfactory/application/mgt/type/DotnetApplicationTypeProcessor.java	(working copy)
+@@ -15,6 +15,7 @@
+  */
+ package org.wso2.carbon.appfactory.application.mgt.type;
+ 
++import org.apache.axiom.om.OMElement;
+ import org.apache.commons.io.FileUtils;
+ import org.apache.commons.logging.Log;
+ import org.apache.commons.logging.LogFactory;
+@@ -22,10 +23,9 @@
+ import org.wso2.carbon.appfactory.common.AppFactoryException;
+ import org.wso2.carbon.appfactory.utilities.project.ProjectUtils;
+ import org.wso2.carbon.appfactory.utilities.version.AppVersionStrategyExecutor;
+-
+ import java.io.File;
++import java.util.Map;
+ 
+-
+ /**
+  * Dotnet application type processor
+  */
+@@ -49,4 +49,31 @@
+ 		    log.warn("Error while deleting pom.xml for application id : " + applicationId);
+ 	    }
+     }
++
++    @Override
++    public OMElement configureBuildJob(OMElement jobConfigTemplate, Map<String, String> parameters, String projectType)
++            throws AppFactoryException {
++        if (jobConfigTemplate == null) {
++            String msg =
++                    "Class loader is unable to find the jenkins job configuration template for ASP.NET application types";
++            log.error(msg);
++            throw new AppFactoryException(msg);
++        }
++        jobConfigTemplate = configureRepositoryData(jobConfigTemplate, parameters);
++
++        setValueUsingXpath(jobConfigTemplate,
++                           AppFactoryConstants.PUBLISHERS_APPFACTORY_POST_BUILD_APP_ID_XPATH_SELECTOR,
++                           parameters.get(AppFactoryConstants.APPLICATION_ID));
++
++        setValueUsingXpath(jobConfigTemplate,
++                           AppFactoryConstants.PUBLISHERS_APPFACTORY_POST_BUILD_APP_VERSION_XPATH_SELECTOR,
++                           parameters.get(AppFactoryConstants.APPLICATION_VERSION));
++
++        setValueUsingXpath(jobConfigTemplate,
++                           AppFactoryConstants.PUBLISHERS_APPFACTORY_POST_BUILD_USERNAME_XPATH_SELECTOR,
++                           parameters.get(AppFactoryConstants.APPLICATION_USER));
++
++        return jobConfigTemplate;
++
++    }
+ }
+Index: org.wso2.carbon.appfactory.application.mgt/2.1.0/src/main/java/org/wso2/carbon/appfactory/application/mgt/type/ESBApplicationTypeProcessor.java
+===================================================================
+--- org.wso2.carbon.appfactory.application.mgt/2.1.0/src/main/java/org/wso2/carbon/appfactory/application/mgt/type/ESBApplicationTypeProcessor.java	(revision 209923)
++++ org.wso2.carbon.appfactory.application.mgt/2.1.0/src/main/java/org/wso2/carbon/appfactory/application/mgt/type/ESBApplicationTypeProcessor.java	(working copy)
+@@ -16,11 +16,13 @@
+ 
+ package org.wso2.carbon.appfactory.application.mgt.type;
+ 
++import org.apache.axiom.om.OMElement;
+ import org.wso2.carbon.appfactory.common.AppFactoryException;
+ import org.wso2.carbon.appfactory.utilities.project.ProjectUtils;
+ import org.wso2.carbon.appfactory.utilities.version.AppVersionStrategyExecutor;
+ 
+ import java.io.File;
++import java.util.Map;
+ 
+ /**
+  * ESB application type processor
+@@ -38,4 +40,10 @@
+         ProjectUtils.generateProjectArchetype(applicationId, workingDirectory,
+                 ProjectUtils.getArchetypeRequest(applicationId, getProperty(MAVEN_ARCHETYPE_REQUEST)));
+     }
++
++    @Override public OMElement configureBuildJob(OMElement jobConfigTemplate, Map<String, String> parameters,
++                                                 String projectType) throws AppFactoryException {
++        //Currently does not have and esb application type so no need to implement
++        return null;
++    }
+ }
+Index: org.wso2.carbon.appfactory.application.mgt/2.1.0/src/main/java/org/wso2/carbon/appfactory/application/mgt/type/MavenBasedApplicationTypeProcessor.java
+===================================================================
+--- org.wso2.carbon.appfactory.application.mgt/2.1.0/src/main/java/org/wso2/carbon/appfactory/application/mgt/type/MavenBasedApplicationTypeProcessor.java	(revision 209923)
++++ org.wso2.carbon.appfactory.application.mgt/2.1.0/src/main/java/org/wso2/carbon/appfactory/application/mgt/type/MavenBasedApplicationTypeProcessor.java	(working copy)
+@@ -16,17 +16,21 @@
+ 
+ package org.wso2.carbon.appfactory.application.mgt.type;
+ 
++import org.apache.axiom.om.OMElement;
++import org.apache.commons.logging.Log;
++import org.apache.commons.logging.LogFactory;
++import org.wso2.carbon.appfactory.common.AppFactoryConstants;
+ import org.wso2.carbon.appfactory.common.AppFactoryException;
+ import org.wso2.carbon.appfactory.utilities.project.ProjectUtils;
+ import org.wso2.carbon.appfactory.utilities.version.AppVersionStrategyExecutor;
+-
+ import java.io.File;
++import java.util.Map;
+ 
+ /**
+  * Application type implementation for Web App
+  */
+ public class MavenBasedApplicationTypeProcessor extends AbstractApplicationTypeProcessor {
+-
++    private static final Log log = LogFactory.getLog(MavenBasedApplicationTypeProcessor.class);
+ 	@Override
+     public void doVersion(String applicationId, String targetVersion, String currentVersion, String workingDirectory)
+             throws AppFactoryException {
+@@ -40,4 +44,50 @@
+ 
+     }
+ 
++    @Override
++    public OMElement configureBuildJob(OMElement jobConfigTemplate, Map<String, String> parameters, String projectType)
++            throws AppFactoryException {
++
++        if (jobConfigTemplate == null) {
++            String msg =
++                    "Class loader is unable to find the jenkins job configuration template for Maven application types";
++            log.error(msg);
++            throw new AppFactoryException(msg);
++
++        }
++        // configure repo data
++        jobConfigTemplate = configureRepositoryData(jobConfigTemplate, parameters);
++
++        // set the maven 3 config name
++        setValueUsingXpath(jobConfigTemplate,
++                           AppFactoryConstants.MAVEN3_CONFIG_NAME_XAPTH_SELECTOR,
++                           parameters.get(AppFactoryConstants.MAVEN3_CONFIG_NAME));
++
++        // Support for post build listener residing in jenkins server
++        setValueUsingXpath(jobConfigTemplate,
++                           AppFactoryConstants.PUBLISHERS_APPFACTORY_POST_BUILD_APP_EXTENSION_XPATH_SELECTOR,
++                           parameters.get(AppFactoryConstants.APPTYPE_EXTENSION));
++
++        setValueUsingXpath(jobConfigTemplate,
++                           AppFactoryConstants.PUBLISHERS_APPFACTORY_POST_BUILD_APP_ID_XPATH_SELECTOR,
++                           parameters.get(AppFactoryConstants.APPLICATION_ID));
++
++        setValueUsingXpath(jobConfigTemplate,
++                           AppFactoryConstants.PUBLISHERS_APPFACTORY_POST_BUILD_APP_VERSION_XPATH_SELECTOR,
++                           parameters.get(AppFactoryConstants.APPLICATION_VERSION));
++
++        setValueUsingXpath(jobConfigTemplate,
++                           AppFactoryConstants.PUBLISHERS_APPFACTORY_POST_BUILD_USERNAME_XPATH_SELECTOR,
++                           parameters.get(AppFactoryConstants.APPLICATION_USER));
++
++        setValueUsingXpath(jobConfigTemplate,
++                           AppFactoryConstants.PUBLISHERS_APPFACTORY_POST_BUILD_REPOFROM_XPATH_SELECTOR,
++                           parameters.get(AppFactoryConstants.REPOSITORY_FROM));
++
++        setValueUsingXpath(jobConfigTemplate,
++                           AppFactoryConstants.APPLICATION_TRIGGER_PERIOD,
++                           parameters.get(AppFactoryConstants.APPLICATION_POLLING_PERIOD));
++
++        return jobConfigTemplate;
++    }
+ }
+Index: org.wso2.carbon.appfactory.application.mgt/2.1.0/src/main/java/org/wso2/carbon/appfactory/application/mgt/type/PHPApplicationTypeProcessor.java
+===================================================================
+--- org.wso2.carbon.appfactory.application.mgt/2.1.0/src/main/java/org/wso2/carbon/appfactory/application/mgt/type/PHPApplicationTypeProcessor.java	(revision 209923)
++++ org.wso2.carbon.appfactory.application.mgt/2.1.0/src/main/java/org/wso2/carbon/appfactory/application/mgt/type/PHPApplicationTypeProcessor.java	(working copy)
+@@ -16,6 +16,7 @@
+ 
+ package org.wso2.carbon.appfactory.application.mgt.type;
+ 
++import org.apache.axiom.om.OMElement;
+ import org.apache.commons.io.FileUtils;
+ import org.apache.commons.lang3.StringUtils;
+ import org.apache.commons.logging.Log;
+@@ -24,6 +25,7 @@
+ import org.wso2.carbon.appfactory.common.AppFactoryConstants;
+ import org.wso2.carbon.appfactory.common.AppFactoryException;
+ import org.wso2.carbon.appfactory.common.util.AppFactoryUtil;
++import org.wso2.carbon.appfactory.core.apptype.ApplicationTypeManager;
+ import org.wso2.carbon.appfactory.core.dao.JDBCApplicationDAO;
+ import org.wso2.carbon.appfactory.core.dto.CartridgeCluster;
+ import org.wso2.carbon.appfactory.core.util.AppFactoryCoreUtil;
+@@ -33,6 +35,7 @@
+ import org.wso2.carbon.context.CarbonContext;
+ 
+ import java.io.File;
++import java.util.Map;
+ 
+ /**
+  * PHP application type processor
+@@ -98,6 +101,64 @@
+ 
+     }
+ 
++    @Override
++    public OMElement configureBuildJob(OMElement jobConfigTemplate, Map<String, String> parameters,
++                                       String projectType) throws AppFactoryException {
++        if (jobConfigTemplate == null) {
++            String msg =
++                    "Class loader is unable to find the jenkins job configuration template for uploadable application types";
++            log.error(msg);
++            throw new AppFactoryException(msg);
++        }
++
++        String artifactArchiver = null;
++        Object hudsonArtifactArchiver = ApplicationTypeManager.getInstance().getApplicationTypeBean(projectType)
++                                                              .getProperty(
++                                                                      AppFactoryConstants.HUDSON_ARTIFACT_ARCHIVER);
++        if (hudsonArtifactArchiver != null) {
++            artifactArchiver = hudsonArtifactArchiver.toString();
++        }
++        jobConfigTemplate = configureRepositoryData(jobConfigTemplate, parameters);
++
++        // Support for post build listener residing in jenkins server
++        setValueUsingXpath(jobConfigTemplate,
++                           AppFactoryConstants.PUBLISHERS_APPFACTORY_POST_BUILD_APP_EXTENSION_XPATH_SELECTOR,
++                           parameters.get(AppFactoryConstants.APPTYPE_EXTENSION));
++
++        setValueUsingXpath(jobConfigTemplate,
++                           AppFactoryConstants.PUBLISHERS_APPFACTORY_POST_BUILD_APP_ID_XPATH_SELECTOR,
++                           parameters.get(AppFactoryConstants.APPLICATION_ID));
++
++        setValueUsingXpath(jobConfigTemplate,
++                           AppFactoryConstants.PUBLISHERS_APPFACTORY_POST_BUILD_APP_VERSION_XPATH_SELECTOR,
++                           parameters.get(AppFactoryConstants.APPLICATION_VERSION));
++
++        if (StringUtils.isNotBlank(artifactArchiver)) {
++            setValueUsingXpath(jobConfigTemplate,
++                               AppFactoryConstants.ARTIFACT_ARCHIVER_CONFIG_NAME_XAPTH_SELECTOR,
++                               artifactArchiver);
++        }
++
++        if (ApplicationTypeManager.getInstance().getApplicationTypeBean(projectType).isUploadableAppType()) {
++            setValueUsingXpath(jobConfigTemplate, AppFactoryConstants.ARTIFACT_ARCHIVER_CONFIG_NAME_XAPTH_SELECTOR,
++                               AppFactoryConstants.DEFAULT_ARTIFACT_NAME +
++                               ApplicationTypeManager.getInstance().getApplicationTypeBean(projectType)
++                                                     .getExtension());
++
++            String repositoryBranchName = parameters.get(AppFactoryConstants.APPLICATION_VERSION);
++            if (AppFactoryConstants.INITIAL_UPLOADED_APP_VERSION.equals(repositoryBranchName)) {
++                setValueUsingXpath(jobConfigTemplate, AppFactoryConstants.GIT_REPOSITORY_VERSION_XPATH_SELECTOR,
++                                   AppFactoryConstants.APPLICATION_VERSION_VALUE_FREESTYLE);
++            }
++        }
++
++        setValueUsingXpath(jobConfigTemplate,
++                           AppFactoryConstants.APPLICATION_TRIGGER_PERIOD,
++                           parameters.get(AppFactoryConstants.APPLICATION_POLLING_PERIOD));
++
++        return jobConfigTemplate;
++    }
++
+     private String getCartridgeActiveIP(String applicationId, String tenantDomain, String stage)
+             throws AppFactoryException {
+         AppFactoryConfiguration configuration = AppFactoryUtil.getAppfactoryConfiguration();
+Index: org.wso2.carbon.appfactory.application.mgt/2.1.0/src/main/java/org/wso2/carbon/appfactory/application/mgt/type/UploadedApplicationTypeProcessor.java
+===================================================================
+--- org.wso2.carbon.appfactory.application.mgt/2.1.0/src/main/java/org/wso2/carbon/appfactory/application/mgt/type/UploadedApplicationTypeProcessor.java	(revision 209923)
++++ org.wso2.carbon.appfactory.application.mgt/2.1.0/src/main/java/org/wso2/carbon/appfactory/application/mgt/type/UploadedApplicationTypeProcessor.java	(working copy)
+@@ -1,18 +1,21 @@
+ package org.wso2.carbon.appfactory.application.mgt.type;
+ 
++import org.apache.axiom.om.OMElement;
+ import org.apache.commons.io.FileUtils;
++import org.apache.commons.lang3.StringUtils;
+ import org.apache.commons.logging.Log;
+ import org.apache.commons.logging.LogFactory;
+ import org.wso2.carbon.appfactory.common.AppFactoryConstants;
+ import org.wso2.carbon.appfactory.common.AppFactoryException;
++import org.wso2.carbon.appfactory.core.apptype.ApplicationTypeManager;
+ import org.wso2.carbon.appfactory.utilities.project.ProjectUtils;
+ import org.wso2.carbon.context.CarbonContext;
+ import org.wso2.carbon.utils.CarbonUtils;
+-
+ import java.io.File;
+ import java.io.IOException;
+ import java.util.ArrayList;
+ import java.util.List;
++import java.util.Map;
+ 
+ /**
+  * Application processor for uploaded application type eg:- war files
+@@ -94,14 +97,73 @@
+ 	@Override
+     public List<File> getPreVersionDeleteableFiles(String applicationID, String targetVersion,
+                                                    String currentVersion, String workingDir) throws AppFactoryException {
+-	    
+ 		String tenantDomain = CarbonContext.getThreadLocalCarbonContext().getTenantDomain();
+-		String applicationExtenstion;
+-        applicationExtenstion = ProjectUtils.getApplicationExtenstion(applicationID,
+-	        		                                      tenantDomain);
+-        List<File> deletableFiles = new ArrayList<File>();
+-	   deletableFiles.add(new File(CarbonUtils.getTmpDir() + File.separator + "branch" + File.separator +
+-                applicationID + File.separator + targetVersion + File.separator + applicationID +"-1.0.0."+ applicationExtenstion)); 
+-	   return deletableFiles;
+-    }
++		String applicationExtension;
++		applicationExtension = ProjectUtils.getApplicationExtenstion(applicationID, tenantDomain);
++		List<File> deletableFiles = new ArrayList<File>();
++		deletableFiles.add(new File(
++				CarbonUtils.getTmpDir() + File.separator + AppFactoryConstants.REPOSITORY_BRANCH + File.separator +
++				applicationID + File.separator + targetVersion + File.separator + applicationID +
++				AppFactoryConstants.MINUS + AppFactoryConstants.INITIAL_UPLOADED_APP_VERSION + AppFactoryConstants.DOT +
++				applicationExtension));
++		return deletableFiles;
++	}
++
++	@Override
++	public OMElement configureBuildJob(OMElement jobConfigTemplate, Map<String, String> parameters,
++	                                   String projectType) throws AppFactoryException {
++		if (jobConfigTemplate == null) {
++			String msg =
++					"Class loader is unable to find the jenkins job configuration template for uploadable application types";
++			log.error(msg);
++			throw new AppFactoryException(msg);
++		}
++
++		String artifactArchiver = null;
++		Object hudsonArtifactArchiver = ApplicationTypeManager.getInstance().getApplicationTypeBean(projectType)
++		                                                      .getProperty(
++				                                                      AppFactoryConstants.HUDSON_ARTIFACT_ARCHIVER);
++		if (hudsonArtifactArchiver != null) {
++			artifactArchiver = hudsonArtifactArchiver.toString();
++		}
++		jobConfigTemplate = configureRepositoryData(jobConfigTemplate, parameters);
++
++		// Support for post build listener residing in jenkins server
++		setValueUsingXpath(jobConfigTemplate,
++		                   AppFactoryConstants.PUBLISHERS_APPFACTORY_POST_BUILD_APP_EXTENSION_XPATH_SELECTOR,
++		                   parameters.get(AppFactoryConstants.APPTYPE_EXTENSION));
++
++		setValueUsingXpath(jobConfigTemplate,
++		                   AppFactoryConstants.PUBLISHERS_APPFACTORY_POST_BUILD_APP_ID_XPATH_SELECTOR,
++		                   parameters.get(AppFactoryConstants.APPLICATION_ID));
++
++		setValueUsingXpath(jobConfigTemplate,
++		                   AppFactoryConstants.PUBLISHERS_APPFACTORY_POST_BUILD_APP_VERSION_XPATH_SELECTOR,
++		                   parameters.get(AppFactoryConstants.APPLICATION_VERSION));
++
++		if (StringUtils.isNotBlank(artifactArchiver)) {
++			setValueUsingXpath(jobConfigTemplate,
++			                   AppFactoryConstants.ARTIFACT_ARCHIVER_CONFIG_NAME_XAPTH_SELECTOR,
++			                   artifactArchiver);
++		}
++
++		if (ApplicationTypeManager.getInstance().getApplicationTypeBean(projectType).isUploadableAppType()) {
++			setValueUsingXpath(jobConfigTemplate, AppFactoryConstants.ARTIFACT_ARCHIVER_CONFIG_NAME_XAPTH_SELECTOR,
++			                   AppFactoryConstants.DEFAULT_ARTIFACT_NAME +
++			                   ApplicationTypeManager.getInstance().getApplicationTypeBean(projectType)
++			                                         .getExtension());
++
++			String repositoryBranchName = parameters.get(AppFactoryConstants.APPLICATION_VERSION);
++			if (AppFactoryConstants.INITIAL_UPLOADED_APP_VERSION.equals(repositoryBranchName)) {
++				setValueUsingXpath(jobConfigTemplate, AppFactoryConstants.GIT_REPOSITORY_VERSION_XPATH_SELECTOR,
++				                   AppFactoryConstants.APPLICATION_VERSION_VALUE_FREESTYLE);
++			}
++		}
++
++		setValueUsingXpath(jobConfigTemplate,
++		                   AppFactoryConstants.APPLICATION_TRIGGER_PERIOD,
++		                   parameters.get(AppFactoryConstants.APPLICATION_POLLING_PERIOD));
++
++		return jobConfigTemplate;
++	}
+ }
+Index: org.wso2.carbon.appfactory.build/2.1.0/src/main/java/org/wso2/carbon/appfactory/jenkins/build/JobConfigurator.java
+===================================================================
+--- org.wso2.carbon.appfactory.build/2.1.0/src/main/java/org/wso2/carbon/appfactory/jenkins/build/JobConfigurator.java	(revision 209923)
++++ org.wso2.carbon.appfactory.build/2.1.0/src/main/java/org/wso2/carbon/appfactory/jenkins/build/JobConfigurator.java	(working copy)
+@@ -17,20 +17,17 @@
+ package org.wso2.carbon.appfactory.jenkins.build;
+ 
+ import org.apache.axiom.om.OMElement;
+-import org.apache.axiom.om.impl.builder.StAXOMBuilder;
+-import org.apache.axiom.om.xpath.AXIOMXPath;
+-import org.apache.commons.lang.StringUtils;
+ import org.apache.commons.logging.Log;
+ import org.apache.commons.logging.LogFactory;
+-import org.wso2.carbon.appfactory.common.AppFactoryConstants;
+ import org.wso2.carbon.appfactory.common.AppFactoryException;
++import org.wso2.carbon.appfactory.core.apptype.ApplicationTypeBean;
+ import org.wso2.carbon.appfactory.core.apptype.ApplicationTypeManager;
+ 
+-import javax.xml.stream.XMLStreamException;
+-import java.io.File;
+-import java.io.InputStream;
+ import java.util.Map;
+ 
++/**
++ * JobConfigurator class configures the build job for a particular application in order to build it
++ */
+ public class JobConfigurator {
+ 
+ 	private static final Log log = LogFactory.getLog(JobConfigurator.class);
+@@ -41,278 +38,19 @@
+ 		this.parameters = parameters;
+ 	}
+ 
+-	public OMElement configure(String projectType) throws AppFactoryException {
+-		@SuppressWarnings("UnnecessaryLocalVariable")
+-
+-		OMElement jobTemplate = null ;
+-		String jobTemplateType= ApplicationTypeManager.getInstance().getApplicationTypeBean(projectType).getBuildJobTemplate();
+-		Boolean isUploadable = ApplicationTypeManager.getInstance().getApplicationTypeBean(projectType).isUploadableAppType();
+-		String extention = ApplicationTypeManager.getInstance().getApplicationTypeBean(projectType).getExtension();
+-		String artifactArchiver = null;
+-		Object hudsonArtifactArchiver = ApplicationTypeManager.getInstance().getApplicationTypeBean(projectType).getProperty("HudsonArtifactArchiver");
+-		if(hudsonArtifactArchiver != null) {
+-			artifactArchiver = hudsonArtifactArchiver.toString();
+-		}
+-		if(AppFactoryConstants.JENKINS_JOB_TEMPLATE_MAVEN.equals(jobTemplateType)){
+-			jobTemplate = getJenkinMVNJobConfigurationTemplate();
+-		}else if(AppFactoryConstants.JENKINS_JOB_TEMPLATE_FREESTYLE.equals(jobTemplateType)){
+-			jobTemplate = getJenkinFreeStyleJobConfigurationTemplate(isUploadable, extention, artifactArchiver);
+-		}else if(AppFactoryConstants.JENKINS_JOB_TEMPLATE_DOTNET.equals(jobTemplateType)){
+-            jobTemplate = getJenkinDotnetJobConfigurationTemplate();
+-        }
+-
+-
+-		return jobTemplate;
+-	}
+-
+-    /**
+-     * This method will get the jenkins job config file related to the repository type used and
+-     * will replace the default values of the required parameters with the actual values
+-     * @return the modified job config file which has actual data
+-     * @throws AppFactoryException
+-     */
+-    private OMElement getJenkinDotnetJobConfigurationTemplate() throws AppFactoryException{
+-        InputStream jobConfigTemplateInputStream = getBaseJobConfigTemplate(parameters.get
+-                (JenkinsCIConstants.REPOSITORY_TYPE),AppFactoryConstants.JENKINS_PROJECT_TYPE_DOTNET);
+-        OMElement jobConfigTemplate;
+-
+-        if (jobConfigTemplateInputStream == null) {
+-            String msg = "Class loader is unable to find the jenkins job configuration template";
+-            log.error(msg);
+-            throw new AppFactoryException(msg);
+-        } else {
+-            try {
+-                StAXOMBuilder builder = new StAXOMBuilder(jobConfigTemplateInputStream);
+-                jobConfigTemplate = builder.getDocumentElement();
+-            } catch (XMLStreamException e) {
+-                String msg = "Error reading the jenkins job configuration template";
+-                log.error(msg, e);
+-                throw new AppFactoryException(msg, e);
+-            }
+-            jobConfigTemplate = configureRepositoryData(jobConfigTemplate, parameters);
+-
+-            setValueUsingXpath(jobConfigTemplate,
+-                    JenkinsCIConstants.PUBLISHERS_APPFACTORY_POST_BUILD_APP_ID_XPATH_SELECTOR,
+-                    parameters.get(JenkinsCIConstants.APPLICATION_ID));
+-
+-            setValueUsingXpath(jobConfigTemplate,
+-                    JenkinsCIConstants.PUBLISHERS_APPFACTORY_POST_BUILD_APP_VERSION_XPATH_SELECTOR,
+-                    parameters.get(JenkinsCIConstants.APPLICATION_VERSION));
+-
+-            setValueUsingXpath(jobConfigTemplate,
+-                    JenkinsCIConstants.PUBLISHERS_APPFACTORY_POST_BUILD_USERNAME_XPATH_SELECTOR,
+-                    parameters.get(JenkinsCIConstants.APPLICATION_USER));
+-
+-            return jobConfigTemplate;
+-        }
+-    }
+-
+-    /**
+-	 * This method will get the jenkins job config file related to the repository type used and
+-	 * will replace the default values of the required parameters with the actual values
+-	 * @return the modified job config file which has actual data
+-	 * @throws AppFactoryException
+-	 */
+-	private OMElement getJenkinMVNJobConfigurationTemplate() throws AppFactoryException {
+-
+-		InputStream jobConfigTemplateInputStream = getBaseJobConfigTemplate(parameters.get
+-				(JenkinsCIConstants.REPOSITORY_TYPE),AppFactoryConstants.JENKINS_PROJECT_TYPE_MAVEN);
+-		OMElement jobConfigTemplate;
+-
+-		if (jobConfigTemplateInputStream != null) {
+-
+-			try {
+-				StAXOMBuilder builder = new StAXOMBuilder(jobConfigTemplateInputStream);
+-				jobConfigTemplate = builder.getDocumentElement();
+-			} catch (XMLStreamException e) {
+-				throw new AppFactoryException(e.getMessage(), e);
+-			}
+-
+-		} else {
+-			throw new AppFactoryException(
+-					"Class loader is unable to find the jenkins job configuration template");
+-		}
+-
+-		// set the svn repo for the application
+-		jobConfigTemplate = configureRepositoryData(jobConfigTemplate, parameters);
+-        /* setValueUsingXpath(jobConfigTemplate, JenkinsCIConstants.SVN_REPOSITORY_XPATH_SELECTOR,
+-        parameters.get(JenkinsCIConstants.REPOSITORY_URL));*/
+-
+-		// set the maven 3 config name
+-		setValueUsingXpath(jobConfigTemplate,
+-		                   JenkinsCIConstants.MAVEN3_CONFIG_NAME_XAPTH_SELECTOR,
+-		                   parameters.get(JenkinsCIConstants.MAVEN3_CONFIG_NAME));
+-
+-
+-		// set the maven 3 config name
+-		//setValueUsingXpath(jobConfigTemplate,
+-		//                 JenkinsCIConstants.PREBUILDERS_MAVEN3_CONFIG_NAME_XPATH_SELECTOR,
+-		//               parameters.get(JenkinsCIConstants.MAVEN3_CONFIG_NAME));
+-
+-		// Support for post build listener residing in jenkins server
+-		setValueUsingXpath(jobConfigTemplate,
+-		                   JenkinsCIConstants.PUBLISHERS_APPFACTORY_POST_BUILD_APP_EXTENSION_XPATH_SELECTOR,
+-		                   parameters.get(JenkinsCIConstants.APPLICATION_EXTENSION));
+-
+-		setValueUsingXpath(jobConfigTemplate,
+-		                   JenkinsCIConstants.PUBLISHERS_APPFACTORY_POST_BUILD_APP_ID_XPATH_SELECTOR,
+-		                   parameters.get(JenkinsCIConstants.APPLICATION_ID));
+-
+-		setValueUsingXpath(jobConfigTemplate,
+-		                   JenkinsCIConstants.PUBLISHERS_APPFACTORY_POST_BUILD_APP_VERSION_XPATH_SELECTOR,
+-		                   parameters.get(JenkinsCIConstants.APPLICATION_VERSION));
+-
+-		setValueUsingXpath(jobConfigTemplate,
+-		                   JenkinsCIConstants.PUBLISHERS_APPFACTORY_POST_BUILD_USERNAME_XPATH_SELECTOR,
+-		                   parameters.get(JenkinsCIConstants.APPLICATION_USER));
+-
+-		setValueUsingXpath(jobConfigTemplate,
+-		                   JenkinsCIConstants.PUBLISHERS_APPFACTORY_POST_BUILD_REPOFROM_XPATH_SELECTOR,
+-		                   parameters.get(JenkinsCIConstants.REPOSITORY_FROM));
+-
+-		setValueUsingXpath(jobConfigTemplate,
+-		                   JenkinsCIConstants.APPLICATION_TRIGGER_PERIOD,
+-		                   parameters.get("PollingPeriod"));
+-		
+-		/*setValueUsingXpath(
+-				jobConfigTemplate,
+-				JenkinsCIConstants.SONAR_PDF_TASK_XPATH_SELECTOR,
+-				"org.codehaus.sonar-plugins.pdf-report:maven-pdfreport-plugin:1.3:generate -Dsonar.pdf.username="
+-						+ AppFactoryUtil.getAdminUsername()
+-						+ " -Dsonar.pdf.password="
+-						+ AppFactoryUtil.getAdminPassword());*/
+-
+-		return jobConfigTemplate;
+-	}
+-
+ 	/**
+-	 * This method will get the jenkins job config file related to the repository type used and
+-	 * will replace the default values of the required parameters with the actual values
+-	 * @return the modified job config file which has actual data
++	 * This method configures the build job template
++	 *
++	 * @param projectType type of the project to build
++	 * @return configured build job template
+ 	 * @throws AppFactoryException
+ 	 */
+-	private OMElement getJenkinFreeStyleJobConfigurationTemplate(Boolean isUploadable,
+-	                                                             String extention,
+-	                                                             String artifactArchiver) throws AppFactoryException {
+-
+-		InputStream jobConfigTemplateInputStream = getBaseJobConfigTemplate(parameters.get
+-				(JenkinsCIConstants.REPOSITORY_TYPE),AppFactoryConstants.JENKINS_PROJECT_TYPE_FREESTYLE);
+-		OMElement jobConfigTemplate;
+-
+-		if (jobConfigTemplateInputStream != null) {
+-
+-			try {
+-				StAXOMBuilder builder = new StAXOMBuilder(jobConfigTemplateInputStream);
+-				jobConfigTemplate = builder.getDocumentElement();
+-			} catch (XMLStreamException e) {
+-				throw new AppFactoryException(e.getMessage(), e);
+-			}
+-
+-		} else {
+-			throw new AppFactoryException(
+-					"Class loader is unable to find the jenkins job configuration template");
+-		}
+-
+-
+-		jobConfigTemplate = configureRepositoryData(jobConfigTemplate, parameters);
+-
+-
+-		// Support for post build listener residing in jenkins server
+-		setValueUsingXpath(jobConfigTemplate,
+-		                   JenkinsCIConstants.PUBLISHERS_APPFACTORY_POST_BUILD_APP_EXTENSION_XPATH_SELECTOR,
+-		                   parameters.get(JenkinsCIConstants.APPLICATION_EXTENSION));
+-
+-		setValueUsingXpath(jobConfigTemplate,
+-		                   JenkinsCIConstants.PUBLISHERS_APPFACTORY_POST_BUILD_APP_ID_XPATH_SELECTOR,
+-		                   parameters.get(JenkinsCIConstants.APPLICATION_ID));
+-
+-
+-		setValueUsingXpath(jobConfigTemplate,
+-		                   JenkinsCIConstants.PUBLISHERS_APPFACTORY_POST_BUILD_APP_VERSION_XPATH_SELECTOR,
+-		                   parameters.get(JenkinsCIConstants.APPLICATION_VERSION));
+-
+-
+-		if(StringUtils.isNotBlank(artifactArchiver)) {
+-			setValueUsingXpath(jobConfigTemplate,
+-			                   JenkinsCIConstants.ARTIFACT_ARCHIVER_CONFIG_NAME_XAPTH_SELECTOR,
+-			                   artifactArchiver);
+-		}
+-
+-		if (isUploadable){
+-			setValueUsingXpath(jobConfigTemplate,JenkinsCIConstants.ARTIFACT_ARCHIVER_CONFIG_NAME_XAPTH_SELECTOR,"*." + extention);
+-
+-			String repositoryBranchName = parameters.get(JenkinsCIConstants.APPLICATION_VERSION);
+-			if(AppFactoryConstants.INITIAL_UPLOADED_APP_VERSION.equals(repositoryBranchName)){
+-				setValueUsingXpath(jobConfigTemplate,"/*/scm/branches/hudson.plugins.git.BranchSpec/name","**");
+-			}
+-		}
+-
+-		setValueUsingXpath(jobConfigTemplate,
+-		                   JenkinsCIConstants.APPLICATION_TRIGGER_PERIOD,
+-		                   parameters.get("PollingPeriod"));
+-
+-		return jobConfigTemplate;
++	public OMElement configure(String projectType) throws AppFactoryException {
++		ApplicationTypeBean applicationTypeBean =
++				ApplicationTypeManager.getInstance().getApplicationTypeBean(projectType);
++		OMElement jobTemplate = applicationTypeBean.getJenkinsJobConfig();
++		return applicationTypeBean.getProcessor()
++		                          .configureBuildJob(jobTemplate, parameters, projectType);
++		// no need to check null for apptype processor since if it is is null this code won't reach
+ 	}
+-
+-
+-
+-	/**
+-	 * Add the repository related information to the jenkinsJobConfig file
+-	 * @param jobConfigTemplate template of config file
+-	 * @param parameters parameters to be added
+-	 * @return the template after replacing the default values of repository related configurations
+-	 * @throws AppFactoryException if an error occurs
+-	 */
+-	private OMElement configureRepositoryData(OMElement jobConfigTemplate,
+-	                                          Map<String, String> parameters)
+-			throws AppFactoryException {
+-		if ("git".equals(parameters.get(JenkinsCIConstants.REPOSITORY_TYPE))) {
+-			String url = parameters.get(JenkinsCIConstants.REPOSITORY_URL);
+-			setValueUsingXpath(jobConfigTemplate, JenkinsCIConstants.GIT_REPOSITORY_XPATH_SELECTOR,
+-			                   url);
+-			String repositoryBranchName = parameters.get(JenkinsCIConstants.APPLICATION_VERSION);
+-			if ("trunk".equals(repositoryBranchName)) {
+-				repositoryBranchName = "master";
+-			}
+-			setValueUsingXpath(jobConfigTemplate,
+-			                   JenkinsCIConstants.GIT_REPOSITORY_VERSION_XPATH_SELECTOR,
+-			                   repositoryBranchName);
+-		} else {
+-			setValueUsingXpath(jobConfigTemplate, JenkinsCIConstants.SVN_REPOSITORY_XPATH_SELECTOR,
+-			                   parameters.get(JenkinsCIConstants.REPOSITORY_URL));
+-		}
+-		return jobConfigTemplate;
+-	}
+-
+-	/**
+-	 * get the job config file template of the given repository type
+-	 * this will be jenkinsJobConfig-git.xml or jenkinsJobConfig-svn.xml
+-	 * @param repositoryType repository type
+-	 * @return the jenkins job configuration file
+-	 */
+-	private InputStream getBaseJobConfigTemplate(String repositoryType,String jenkinProjectType) {
+-		String configFileName = File.separator + "jenkinsJobConfig-".concat(repositoryType).concat("-"+jenkinProjectType).
+-				concat(".xml");
+-		return this.getClass().getResourceAsStream(configFileName);
+-	}
+-
+-	private void setValueUsingXpath(OMElement template, String selector, String value)
+-			throws AppFactoryException {
+-
+-		try {
+-			AXIOMXPath axiomxPath = new AXIOMXPath(selector);
+-			Object selectedObject = axiomxPath.selectSingleNode(template);
+-
+-			if (selectedObject != null && selectedObject instanceof OMElement) {
+-				OMElement svnRepoPathElement = (OMElement) selectedObject;
+-				svnRepoPathElement.setText(value);
+-			} else {
+-				log.warn("Unable to find xml element matching selector : " + selector);
+-			}
+-
+-		} catch (Exception ex) {
+-			throw new AppFactoryException("Unable to set value to job config", ex);
+-		}
+-	}
+-
+ }
+Index: org.wso2.carbon.appfactory.common/2.1.0/src/main/java/org/wso2/carbon/appfactory/common/AppFactoryConstants.java
+===================================================================
+--- org.wso2.carbon.appfactory.common/2.1.0/src/main/java/org/wso2/carbon/appfactory/common/AppFactoryConstants.java	(revision 209923)
++++ org.wso2.carbon.appfactory.common/2.1.0/src/main/java/org/wso2/carbon/appfactory/common/AppFactoryConstants.java	(working copy)
+@@ -63,19 +63,53 @@
+ 	public static final String MAVEN_ARTIFACT_ID_REPLACEMENT = " -DartifactId=";
+ 	public static final String MAVEN_ARTIFACT_ID = "-DartifactId=";
+ 
++	/**
++	 * Defining repository related constants
++	 */
++	public static final String REPOSITORY_TYPE_GIT = "git";
++	public static final String REPOSITORY_BRANCH_MASTER = "master";
++	public static final String REPOSITORY_BRANCH = "branch";
+ 
++	/**
++	 * Defining Jenkins job configuration related constants
++	 */
++	public static final String JENKINS_JOB_CONFIG = "jenkins-config.xml";
++	public static final String REPOSITORY_TYPE = "repository.type";
++	public static final String REPOSITORY_URL = "repository.url";
++	public static final String SVN_REPOSITORY_XPATH_SELECTOR =
++			"/*/scm/locations/hudson.scm.SubversionSCM_-ModuleLocation/remote";
++	public static final String GIT_REPOSITORY_XPATH_SELECTOR =
++			"/*/scm/userRemoteConfigs/hudson.plugins.git.UserRemoteConfig/url";
++	public static final String GIT_REPOSITORY_VERSION_XPATH_SELECTOR =
++			"/*/scm/branches/hudson.plugins.git.BranchSpec/name";
+ 
+-    /**
+-     * Defining Jenkins job configuration types
+-     */
+-    public static final String JENKINS_JOB_TEMPLATE_MAVEN ="maven";
+-    public static final String JENKINS_JOB_TEMPLATE_FREESTYLE = "freestyle";
+-    public static final String JENKINS_JOB_TEMPLATE_DOTNET = "dotnet";
++	public static final String MAVEN3_CONFIG_NAME = "maven3.config.name";
++	public static final String MAVEN3_CONFIG_NAME_XAPTH_SELECTOR = "mavenName";
++	public static final String ARTIFACT_ARCHIVER_CONFIG_NAME_XAPTH_SELECTOR =
++			"/*/publishers/hudson.tasks.ArtifactArchiver/artifacts";
+ 
+-    public static final String JENKINS_PROJECT_TYPE_MAVEN ="mvn";
+-    public static final String JENKINS_PROJECT_TYPE_FREESTYLE = "freestyle";
+-    public static final String JENKINS_PROJECT_TYPE_DOTNET = "dotnet";
++	public static final String REPOSITORY_FROM = "repositoryFrom";
++	public static final String APPTYPE_EXTENSION = "application.extension";
+ 
++	private static final String PUBLISHERS_APPFACTORY_PLUGIN_XPATH_BASE =
++			"/*/publishers/org.wso2.carbon.appfactory.jenkins.AppfactoryPluginManager/";
++	public static final String PUBLISHERS_APPFACTORY_POST_BUILD_APP_ID_XPATH_SELECTOR =
++			PUBLISHERS_APPFACTORY_PLUGIN_XPATH_BASE + "applicationId";
++	public static final String PUBLISHERS_APPFACTORY_POST_BUILD_APP_VERSION_XPATH_SELECTOR =
++			PUBLISHERS_APPFACTORY_PLUGIN_XPATH_BASE + "/applicationVersion";
++	public static final String PUBLISHERS_APPFACTORY_POST_BUILD_APP_EXTENSION_XPATH_SELECTOR =
++			PUBLISHERS_APPFACTORY_PLUGIN_XPATH_BASE + "/applicationArtifactExtension";
++	public static final String PUBLISHERS_APPFACTORY_POST_BUILD_USERNAME_XPATH_SELECTOR =
++			PUBLISHERS_APPFACTORY_PLUGIN_XPATH_BASE + "userName";
++	public static final String PUBLISHERS_APPFACTORY_POST_BUILD_REPOFROM_XPATH_SELECTOR =
++			PUBLISHERS_APPFACTORY_PLUGIN_XPATH_BASE + "repositoryFrom";
++	public static final String APPLICATION_TRIGGER_PERIOD =
++			"/*/triggers/hudson.triggers.SCMTrigger/spec";
++	public static final String APPLICATION_POLLING_PERIOD = "PollingPeriod";
++	public static final String APPLICATION_VERSION_VALUE_FREESTYLE = "**";
++	public static final String DEFAULT_ARTIFACT_NAME = "*.";
++	public static final String HUDSON_ARTIFACT_ARCHIVER = "HudsonArtifactArchiver";
++
+ 	/**
+ 	 * Defining git related constants
+ 	 */
+Index: org.wso2.carbon.appfactory.core/2.1.0/src/main/java/org/wso2/carbon/appfactory/core/apptype/ApplicationTypeBean.java
+===================================================================
+--- org.wso2.carbon.appfactory.core/2.1.0/src/main/java/org/wso2/carbon/appfactory/core/apptype/ApplicationTypeBean.java	(revision 209923)
++++ org.wso2.carbon.appfactory.core/2.1.0/src/main/java/org/wso2/carbon/appfactory/core/apptype/ApplicationTypeBean.java	(working copy)
+@@ -16,6 +16,8 @@
+ 
+ package org.wso2.carbon.appfactory.core.apptype;
+ 
++import org.apache.axiom.om.OMElement;
++
+ import java.util.Properties;
+ 
+ /**
+@@ -38,7 +40,7 @@
+ 	private Properties properties;
+     private boolean isAllowDomainMapping;
+     private int displayOrder;
+-
++	private OMElement jenkinsJobConfig;
+ 	public ApplicationTypeBean(){
+ 	}
+ 
+@@ -168,4 +170,12 @@
+     public void setDisplayOrder(int displayOrder) {
+         this.displayOrder = displayOrder;
+     }
++
++	public void setJenkinsJobConfig(OMElement jenkinsJobConfig) {
++		this.jenkinsJobConfig = jenkinsJobConfig;
++	}
++
++	public OMElement getJenkinsJobConfig() {
++		return jenkinsJobConfig;
++	}
+ }
+Index: org.wso2.carbon.appfactory.core/2.1.0/src/main/java/org/wso2/carbon/appfactory/core/apptype/ApplicationTypeDeployer.java
+===================================================================
+--- org.wso2.carbon.appfactory.core/2.1.0/src/main/java/org/wso2/carbon/appfactory/core/apptype/ApplicationTypeDeployer.java	(revision 209923)
++++ org.wso2.carbon.appfactory.core/2.1.0/src/main/java/org/wso2/carbon/appfactory/core/apptype/ApplicationTypeDeployer.java	(working copy)
+@@ -24,9 +24,9 @@
+ import org.apache.commons.io.FilenameUtils;
+ import org.apache.commons.logging.Log;
+ import org.apache.commons.logging.LogFactory;
++import org.wso2.carbon.appfactory.common.AppFactoryConstants;
+ import org.wso2.carbon.appfactory.common.AppFactoryException;
+ import org.wso2.carbon.appfactory.common.util.UnzipUtility;
+-
+ import java.io.File;
+ import java.io.IOException;
+ 
+@@ -49,11 +49,16 @@
+ 		this.axisConfig = axisConfig;
+ 	}
+ 
+-	@Override public void init(ConfigurationContext configurationContext) {
++	@Override
++	public void init(ConfigurationContext configurationContext) {
+ 		this.axisConfig = configurationContext.getAxisConfiguration();
+-
+ 	}
+ 
++	/**
++	 * This method deploys a new apptype
++	 *
++	 * @param deploymentFileData apptype file
++	 */
+ 	public void deploy(DeploymentFileData deploymentFileData) {
+ 		File deploymentFile = deploymentFileData.getFile();
+ 		boolean isDirectory = deploymentFile.isDirectory();
+@@ -73,15 +78,18 @@
+ 		try {
+ 			UnzipUtility.unzip(archivePath, destinationFolderPath);
+ 			File appTypeConfiguration = new File(destinationFolderPath + File.separator + APPTYPE_CONFIGURATION_NAME);
+-			ApplicationTypeManager.getInstance().addAppType(appTypeConfiguration);
++			File jenkinsJobConfig =
++					new File(destinationFolderPath + File.separator + AppFactoryConstants.JENKINS_JOB_CONFIG);
++			ApplicationTypeManager.getInstance().addAppType(appTypeConfiguration, jenkinsJobConfig);
+ 		} catch (IOException e) {
+-			log.error("Error while deploying the apptype : " + deploymentFile.getName(), e);
+-			throw new RuntimeException("Error while deploying the apptype : " + deploymentFile.getName(), e);
+-		}catch (AppFactoryException e) {
+-			log.error("Error while deploying the apptype : " + deploymentFile.getName(), e);
+-			throw new RuntimeException("Error while deploying the apptype : " + deploymentFile.getName(), e);
++			String msg = "Error while reading the apptype configuration : " + deploymentFile.getName();
++			log.error(msg, e);
++			throw new RuntimeException(msg, e);
++		} catch (AppFactoryException e) {
++			String msg = "Error while deploying the apptype : " + deploymentFile.getName();
++			log.error(msg, e);
++			throw new RuntimeException(msg, e);
+ 		}
+-
+ 		if(log.isDebugEnabled()){
+ 			log.debug("Deployed the new apptype from : " + deploymentFile.getName());
+ 		}
+Index: org.wso2.carbon.appfactory.core/2.1.0/src/main/java/org/wso2/carbon/appfactory/core/apptype/ApplicationTypeManager.java
+===================================================================
+--- org.wso2.carbon.appfactory.core/2.1.0/src/main/java/org/wso2/carbon/appfactory/core/apptype/ApplicationTypeManager.java	(revision 209923)
++++ org.wso2.carbon.appfactory.core/2.1.0/src/main/java/org/wso2/carbon/appfactory/core/apptype/ApplicationTypeManager.java	(working copy)
+@@ -16,13 +16,15 @@
+ 
+ package org.wso2.carbon.appfactory.core.apptype;
+ 
++import org.apache.axiom.om.OMElement;
++import org.apache.axiom.om.impl.builder.StAXOMBuilder;
+ import org.apache.commons.logging.Log;
+ import org.apache.commons.logging.LogFactory;
+ import org.wso2.carbon.appfactory.common.AppFactoryConfigurationBuilder;
+ import org.wso2.carbon.appfactory.common.AppFactoryConstants;
+ import org.wso2.carbon.appfactory.common.AppFactoryException;
+-
+-import java.io.File;
++import javax.xml.stream.XMLStreamException;
++import java.io.*;
+ import java.lang.reflect.Constructor;
+ import java.lang.reflect.InvocationTargetException;
+ import java.util.HashMap;
+@@ -64,33 +66,62 @@
+ 
+ 	/**
+ 	 * Add new app type from a apptype.xml
+-	 * @param file the configuration file
++	 *
++	 * @param apptype     apptype configuration file
++	 * @param buildConfig build job configuration file
+ 	 * @throws AppFactoryException
+ 	 */
+-	public void addAppType(File file) throws AppFactoryException {
+-		Map<String, String> appTypeConfig = new AppFactoryConfigurationBuilder(file
+-                .getAbsolutePath()).loadConfigurationFile();
+-		if(appTypeConfig == null){
+-			throw new AppFactoryException("Configuration is null. Check the apptype.xml and try again.");
++	public void addAppType(File apptype, File buildConfig) throws AppFactoryException, FileNotFoundException {
++
++		Map<String, String> appTypeConfig = new AppFactoryConfigurationBuilder(apptype.getAbsolutePath())
++				.loadConfigurationFile();
++		OMElement buildTemplate;
++		StAXOMBuilder builder;
++		try {
++			if (!buildConfig.exists()) {
++				//get the default config
++				if (log.isDebugEnabled()) {
++					log.debug("getting the default jenkins-config since custom config is not available for apptype:" +
++					          apptype.getName());
++				}
++				InputStream inputStream =
++						this.getClass().getResourceAsStream(File.separator + AppFactoryConstants.JENKINS_JOB_CONFIG);
++				builder = new StAXOMBuilder(inputStream);
++				buildTemplate = builder.getDocumentElement();
++			} else {
++				if (log.isDebugEnabled()) {
++					log.debug("getting the custom jenkins-config since it is provided for apptype:"
++					          + apptype.getName());
++				}
++				InputStream inputStream = new FileInputStream(buildConfig);
++				builder = new StAXOMBuilder(inputStream);
++				buildTemplate = builder.getDocumentElement();
++			}
++		} catch (XMLStreamException e) {
++			String msg = "Error while reading apptype: " + apptype.getName();
++			log.error(msg, e);
++			throw new AppFactoryException(msg, e);
+ 		}
+-		initAppTypeFromConfig(appTypeConfig);
++		initAppTypeFromConfig(appTypeConfig, buildTemplate);
+ 	}
+ 
+ 	/**
+ 	 * Initialize the bean from the configuration
++	 *
+ 	 * @param config map of name value pairs from the content of the apptype.xml
++	 * @param buildJob OMElement of the build job
+ 	 * @throws AppFactoryException
+ 	 */
+-	private void initAppTypeFromConfig(Map<String, String> config) throws AppFactoryException {
++	private void initAppTypeFromConfig(Map<String, String> config, OMElement buildJob) throws AppFactoryException {
+ 
+ 		String type = config.get(AppFactoryConstants.APPLICATION_TYPE_CONFIG);
+ 		Properties properties = new Properties();
+ 
+-		for (String key : config.keySet()){
+-			if(config.get(key) != null) {
+-				properties.put(key, config.get(key));
++		for (Map.Entry entry : config.entrySet()){
++			if(entry.getValue() != null) {
++				properties.put(entry.getKey(), entry.getValue());
+ 			} else {
+-				log.warn("Property is not available in apptype configuration : " + key);
++				log.warn("Property is not available in apptype configuration : " + entry.getKey());
+ 			}
+ 		}
+ 
+@@ -124,6 +155,7 @@
+                 applicationTypeBean.setIsAllowDomainMapping(Boolean.parseBoolean(properties.get("isAllowDomainMapping")
+                                                                                          .toString()));
+             }
++			applicationTypeBean.setJenkinsJobConfig(buildJob);
+             // We set the order here. This is used when displaying the apps in the UI
+             // If there are no values for this, we give Integer.MAX_VALUE as the display order.
+             // If there is an error in parsing the integer value, we should not stop the deployment.
+Index: org.wso2.carbon.appfactory.core/2.1.0/src/main/java/org/wso2/carbon/appfactory/core/apptype/ApplicationTypeProcessor.java
+===================================================================
+--- org.wso2.carbon.appfactory.core/2.1.0/src/main/java/org/wso2/carbon/appfactory/core/apptype/ApplicationTypeProcessor.java	(revision 209923)
++++ org.wso2.carbon.appfactory.core/2.1.0/src/main/java/org/wso2/carbon/appfactory/core/apptype/ApplicationTypeProcessor.java	(working copy)
+@@ -16,10 +16,12 @@
+ 
+ package org.wso2.carbon.appfactory.core.apptype;
+ 
++import org.apache.axiom.om.OMElement;
+ import org.wso2.carbon.appfactory.common.AppFactoryException;
+ 
+ import java.io.File;
+ import java.util.List;
++import java.util.Map;
+ import java.util.Properties;
+ 
+ /**
+@@ -30,9 +32,9 @@
+     /**
+      * Do a version on the artifact that can be found in workingDirectory
+      *
+-     * @param targetVersion
+-     * @param currentVersion
+-     * @param workingDirectory
++     * @param targetVersion    target version of the application
++     * @param currentVersion   current version of the application
++     * @param workingDirectory working directory path of the application
+      * @throws org.wso2.carbon.appfactory.common.AppFactoryException
+      */
+     public void doVersion(String applicationId, String targetVersion, String currentVersion,
+@@ -39,10 +41,10 @@
+                           String workingDirectory) throws AppFactoryException;
+ 
+     /**
+-     *  Generate a sample application  in working directory
++     * Generate a sample application  in working directory
+      *
+-     * @param applicationID
+-     * @param workingDirectory
++     * @param applicationID    application id
++     * @param workingDirectory working directory path of the application
+      */
+     public void generateApplicationSkeleton(String applicationID, String workingDirectory) throws AppFactoryException;
+ 
+@@ -64,26 +66,40 @@
+     /**
+      * New branch will be created based on existing branch. This method returns
+      * list of files which should be deleted before creating new branch.
+-     * @param appId
+-     * @param targetVersion
+-     * @param currentVersion
+-     * @param absolutePath
+-     * @return
++     *
++     * @param appId          application id
++     * @param targetVersion  target version
++     * @param currentVersion current version of the application
++     * @param absolutePath   absolute path of the application
++     * @return list of files
+      * @throws org.wso2.carbon.appfactory.common.AppFactoryException
+      */
+-	public List<File> getPreVersionDeleteableFiles(String appId, String targetVersion,
++    public List<File> getPreVersionDeleteableFiles(String appId, String targetVersion,
+ 	                                               String currentVersion, String absolutePath) throws AppFactoryException;
+ 
+-	/**
+-	 * Returns the deployed url
+-	 * @param tenantDomain
+-	 * @param applicationID
+-	 * @param applicationVersion
+-	 * @param stage
+-	 * @return
+-	 * @throws AppFactoryException
+-	 */
+-	public String getDeployedURL(String tenantDomain, String applicationID,
++    /**
++     * Returns the deployed url
++     *
++     * @param tenantDomain       domain of the tenant
++     * @param applicationID      application id
++     * @param applicationVersion application version
++     * @param stage              life cycle stage of the application
++     * @return deployed url
++     * @throws AppFactoryException
++     */
++    public String getDeployedURL(String tenantDomain, String applicationID,
+ 	                             String applicationVersion, String stage) throws AppFactoryException;
+ 
++    /**
++     * This method Configures the build job with project related data
++     *
++     * @param jobConfigTemplate default build job template
++     * @param parameters        parameters of the application
++     * @param projectType       type of the project
++     * @return Configured template as a OMElement
++     * @throws AppFactoryException
++     */
++    public OMElement configureBuildJob(OMElement jobConfigTemplate, Map<String, String> parameters,
++                                       String projectType)
++            throws AppFactoryException;
+ }
+Index: org.wso2.carbon.appfactory.core/2.1.0/src/main/resources/jenkins-config.xml
+===================================================================
+--- org.wso2.carbon.appfactory.core/2.1.0/src/main/resources/jenkins-config.xml	(revision 0)
++++ org.wso2.carbon.appfactory.core/2.1.0/src/main/resources/jenkins-config.xml	(working copy)
+@@ -0,0 +1,180 @@
++<?xml version='1.0' encoding='UTF-8'?>
++ <!--
++   ~ Copyright 2005-2014 WSO2, Inc. (http://wso2.com)
++
++   ~  Licensed under the Apache License, Version 2.0 (the "License");
++   ~  you may not use this file except in compliance with the License.
++   ~  You may obtain a copy of the License at
++   ~
++   ~  http://www.apache.org/licenses/LICENSE-2.0
++   ~
++   ~  Unless required by applicable law or agreed to in writing, software
++   ~  distributed under the License is distributed on an "AS IS" BASIS,
++   ~  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++   ~  See the License for the specific language governing permissions and
++   ~  limitations under the License.
++   -->
++
++<maven2-moduleset>
++    <actions/>
++    <description></description>
++    <keepDependencies>false</keepDependencies>
++    <properties>
++        <hudson.model.ParametersDefinitionProperty>
++            <parameterDefinitions>
++                <hudson.model.StringParameterDefinition>
++                    <name>isAutomatic</name>
++                    <description></description>
++                    <defaultValue>true</defaultValue>
++                </hudson.model.StringParameterDefinition>
++                <hudson.model.StringParameterDefinition>
++                    <name>persistArtifact</name>
++                    <description></description>
++                    <defaultValue>false</defaultValue>
++                </hudson.model.StringParameterDefinition>
++                <hudson.model.StringParameterDefinition>
++                    <name>doDeploy</name>
++                    <description></description>
++                    <defaultValue>false</defaultValue>
++                </hudson.model.StringParameterDefinition>
++                <hudson.model.StringParameterDefinition>
++                    <name>deployAction</name>
++                    <description></description>
++                    <defaultValue>deploy</defaultValue>
++                </hudson.model.StringParameterDefinition>
++                <hudson.model.StringParameterDefinition>
++                    <name>deployStage</name>
++                    <description></description>
++                    <defaultValue>empty</defaultValue>
++                </hudson.model.StringParameterDefinition>
++                <hudson.model.StringParameterDefinition>
++                    <name>tagName</name>
++                    <description></description>
++                    <defaultValue></defaultValue>
++                </hudson.model.StringParameterDefinition>
++                <hudson.model.StringParameterDefinition>
++                    <name>tenantUserName</name>
++                    <description></description>
++                    <defaultValue></defaultValue>
++                </hudson.model.StringParameterDefinition>
++            </parameterDefinitions>
++        </hudson.model.ParametersDefinitionProperty>
++    </properties>
++    <scm class="hudson.plugins.git.GitSCM">
++        <configVersion>2</configVersion>
++        <userRemoteConfigs>
++            <hudson.plugins.git.UserRemoteConfig>
++                <name></name>
++                <refspec></refspec>
++                <url>http://admin%40admin.com:admin@localhost:9763/scm-webapp-1.14/git/app2</url>
++            </hudson.plugins.git.UserRemoteConfig>
++        </userRemoteConfigs>
++        <branches>
++            <hudson.plugins.git.BranchSpec>
++                <name>2.0.0</name>
++            </hudson.plugins.git.BranchSpec>
++        </branches>
++        <disableSubmodules>false</disableSubmodules>
++        <recursiveSubmodules>false</recursiveSubmodules>
++        <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
++        <authorOrCommitter>false</authorOrCommitter>
++        <clean>false</clean>
++        <wipeOutWorkspace>false</wipeOutWorkspace>
++        <pruneBranches>false</pruneBranches>
++        <remotePoll>false</remotePoll>
++        <ignoreNotifyCommit>false</ignoreNotifyCommit>
++        <useShallowClone>false</useShallowClone>
++        <buildChooser class="hudson.plugins.git.util.DefaultBuildChooser"/>
++        <gitTool>Default</gitTool>
++        <submoduleCfg class="list"/>
++        <relativeTargetDir></relativeTargetDir>
++        <reference></reference>
++        <excludedRegions></excludedRegions>
++        <excludedUsers></excludedUsers>
++        <gitConfigName></gitConfigName>
++        <gitConfigEmail></gitConfigEmail>
++        <skipTag>false</skipTag>
++        <includedRegions></includedRegions>
++        <scmName></scmName>
++    </scm>
++    <canRoam>true</canRoam>
++    <disabled>false</disabled>
++    <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
++    <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
++    <authToken>build</authToken>
++    <concurrentBuild>false</concurrentBuild>
++    <mavenName>m3</mavenName>
++    <mavenOpts>-Xmx4048M -XX:MaxPermSize=4048M</mavenOpts>
++    <aggregatorStyleBuild>true</aggregatorStyleBuild>
++    <incrementalBuild>false</incrementalBuild>
++    <perModuleEmail>true</perModuleEmail>
++    <ignoreUpstremChanges>false</ignoreUpstremChanges>
++    <archivingDisabled>false</archivingDisabled>
++    <resolveDependencies>false</resolveDependencies>
++    <processPlugins>false</processPlugins>
++    <mavenValidationLevel>-1</mavenValidationLevel>
++    <runHeadless>false</runHeadless>
++    <settingConfigId></settingConfigId>
++    <globalSettingConfigId></globalSettingConfigId>
++    <reporters/>
++    <publishers>
++        <xunit>
++            <types>
++                <JUnitType>
++                    <pattern>*</pattern>
++                    <failIfNotNew>false</failIfNotNew>
++                    <deleteOutputFiles>true</deleteOutputFiles>
++                    <stopProcessingIfError>false</stopProcessingIfError>
++                </JUnitType>
++            </types>
++            <thresholds>
++                <org.jenkinsci.plugins.xunit.threshold.FailedThreshold>
++                    <unstableThreshold>1</unstableThreshold>
++                    <unstableNewThreshold>1</unstableNewThreshold>
++                    <failureThreshold>1</failureThreshold>
++                    <failureNewThreshold>1</failureNewThreshold>
++                </org.jenkinsci.plugins.xunit.threshold.FailedThreshold>
++                <org.jenkinsci.plugins.xunit.threshold.SkippedThreshold>
++                    <unstableThreshold></unstableThreshold>
++                    <unstableNewThreshold></unstableNewThreshold>
++                    <failureThreshold></failureThreshold>
++                    <failureNewThreshold></failureNewThreshold>
++                </org.jenkinsci.plugins.xunit.threshold.SkippedThreshold>
++            </thresholds>
++            <thresholdMode>1</thresholdMode>
++        </xunit>
++        <org.wso2.carbon.appfactory.jenkins.AppfactoryPluginManager>
++            <applicationId>app1</applicationId>
++            <applicationVersion>1.0.0</applicationVersion>
++            <applicationArtifactExtension>war</applicationArtifactExtension>
++            <userName>aaa</userName>
++            <repositoryFrom>aaa</repositoryFrom>
++        </org.wso2.carbon.appfactory.jenkins.AppfactoryPluginManager>
++        <!--hudson.plugins.sonar.SonarPublisher>
++            <jdk>(Inherit From Job)</jdk>
++            <branch></branch>
++            <language></language>
++            <mavenOpts></mavenOpts>
++            <jobAdditionalProperties></jobAdditionalProperties>
++        </hudson.plugins.sonar.SonarPublisher-->
++    </publishers>
++    <buildWrappers/>
++    <prebuilders/>
++    <!--postbuilders>
++	    <hudson.tasks.Maven>
++	      <targets></targets>
++	      <mavenName>m3</mavenName>
++	      <usePrivateRepository>false</usePrivateRepository>
++	    </hudson.tasks.Maven>
++    </postbuilders-->
++    <runPostStepsIfResult>
++        <name>FAILURE</name>
++        <ordinal>2</ordinal>
++        <color>RED</color>
++    </runPostStepsIfResult>
++    <triggers class="vector">
++        <hudson.triggers.SCMTrigger>
++            <spec></spec>
++        </hudson.triggers.SCMTrigger>
++    </triggers>
++</maven2-moduleset>
