@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?><components xmlns:scr="http://www.osgi.org/xmlns/scr/v1.0.0">
-    <scr:component enabled="true" immediate="true" name="org.wso2.carbon.appfactory.eventing.internal">
-        <implementation class="org.wso2.carbon.appfactory.eventing.internal.AppFactoryEventingDS"/>
-        <property name="service.pid" value="org.wso2.carbon.appfactory.eventing.internal" private="false"/>
-        <reference name="org.wso2.carbon.social.component" interface="org.wso2.carbon.social.core.service.SocialActivityService" cardinality="0..1" policy="dynamic" bind="setSocialActivityService" unbind="unsetSocialActivityService" checked="true" strategy="event"/>
-    </scr:component>
-</components>

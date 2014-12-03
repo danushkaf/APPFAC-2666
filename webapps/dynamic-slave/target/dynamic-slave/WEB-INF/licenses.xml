@@ -1,2 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<l:dependencies xmlns:l='licenses' groupId='org.wso2.appfactory' artifactId='dynamic-slave' version='1.0.0-SNAPSHOT'><l:dependency name='dynamic-slave' groupId='org.wso2.appfactory' artifactId='dynamic-slave' version='1.0.0-SNAPSHOT' url='http://jenkins-ci.org/plugin/dynamic-slave/'><l:description/></l:dependency></l:dependencies>
