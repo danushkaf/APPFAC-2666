@@ -1,0 +1,21 @@
+<Runtime>
+    <Runtime>appserver</Runtime>
+    <ClassName>org.wso2.carbon.appfactory.jenkins.deploy.JenkinsArtifactDeployer</ClassName>
+    <Endpoint>https://sc.s2.AF_HOST:9463/services/</Endpoint>
+    <RepositoryProvider>
+        <ProviderClass>org.wso2.carbon.appfactory.s4.integration.GITBlitBasedGITRepositoryProvider</ProviderClass>
+        <BaseURL>https://gitblit.s2.wso2.com:8444/</BaseURL>
+        <URLPattern>{@stage}/as</URLPattern>
+        <AdminUserName>admin</AdminUserName>
+        <AdminPassword>admin</AdminPassword>
+    </RepositoryProvider>
+
+    <AliasPrefix>as</AliasPrefix>
+    <CartridgeTypePrefix>as</CartridgeTypePrefix>
+    <DeploymentPolicy>af-deployment</DeploymentPolicy>
+    <AutoscalePolicy>economy</AutoscalePolicy>
+    <RepoURL></RepoURL>
+    <DataCartridgeType></DataCartridgeType>
+    <DataCartridgeAlias></DataCartridgeAlias>
+    <SubscribeOnDeployment>false</SubscribeOnDeployment>
+</Runtime>
