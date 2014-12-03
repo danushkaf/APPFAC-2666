@@ -140,6 +140,7 @@ public class ApplicationTypeManager {
 			if(properties.getProperty("Buildable") != null){
 				applicationTypeBean.setBuildable(Boolean.parseBoolean(properties.get("Buildable").toString()));
 			}
+			applicationTypeBean.setRuntimes(properties.getProperty("Runtimes"));
 			applicationTypeBean.setBuildJobTemplate(properties.get("BuildJobTemplate").toString());
 			applicationTypeBean.setComment(properties.get("Comment").toString());
 			applicationTypeBean.setDescription(properties.get("Description").toString());

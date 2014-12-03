@@ -20,4 +20,5 @@
     <DevelopmentStageParam>.dev</DevelopmentStageParam>
     <TestingStageParam>.test</TestingStageParam>
     <LaunchURLPattern>https://appserver{stage}.milestones.appfactory.wso2.com:9443/t/{tenantDomain}/webapps/{applicationID}-{applicationVersion}/</LaunchURLPattern>
+    <Runtimes>appserver</Runtimes>
 </ApplicationType>

@@ -41,6 +41,7 @@ public class ApplicationTypeBean {
     private boolean isAllowDomainMapping;
     private int displayOrder;
 	private OMElement jenkinsJobConfig;
+	private String runtimes;
 	public ApplicationTypeBean(){
 	}
 
@@ -177,5 +178,13 @@ public class ApplicationTypeBean {
 
 	public OMElement getJenkinsJobConfig() {
 		return jenkinsJobConfig;
+	}
+
+	public String getRuntimes() {
+		return runtimes;
+	}
+
+	public void setRuntimes(String runtimes) {
+		this.runtimes = runtimes;
 	}
 }

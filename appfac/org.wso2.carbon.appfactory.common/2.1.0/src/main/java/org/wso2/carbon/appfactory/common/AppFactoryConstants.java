@@ -386,4 +386,9 @@ public class AppFactoryConstants {
 		}
 
 	}
+
+	/**
+	 * Constant for numbers
+	 */
+	public static final int ZERO=0;
 }
