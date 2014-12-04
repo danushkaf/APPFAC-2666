@@ -1,6 +1,6 @@
 /*
  *
- *  * Copyright 2005-2014 WSO2, Inc. (http://wso2.com)
+ *  * Copyright 2014 WSO2, Inc. (http://wso2.com)
  *  *
  *  * Licensed under the Apache License, Version 2.0 (the "License");
  *  * you may not use this file except in compliance with the License.
@@ -52,15 +52,13 @@ public class RuntimeDeployer extends AbstractDeployer {
 		this.axisConfig = axisConfig;
 	}
 
-	@Override public void init(ConfigurationContext configurationContext) {
+	@Override
+	public void init(ConfigurationContext configurationContext) {
 		this.axisConfig = configurationContext.getAxisConfiguration();
 
 	}
 
-	/**
-	 * deploy method will trigger the deployment of runtime.
-	 * @param runtimeFileData - File which has the files of runtime config.
-	 */
+	@Override
 	public void deploy(DeploymentFileData runtimeFileData) {
 
 		File runtimeFile = runtimeFileData.getFile();
@@ -95,15 +93,18 @@ public class RuntimeDeployer extends AbstractDeployer {
 		}
 	}
 
+	@Override
 	public void undeploy(String fileName) throws DeploymentException {
 		super.undeploy(fileName);
 	}
 
-	@Override public void setDirectory(String s) {
+	@Override
+	public void setDirectory(String s) {
 
 	}
 
-	@Override public void setExtension(String s) {
+	@Override
+	public void setExtension(String s) {
 
 	}
 }
