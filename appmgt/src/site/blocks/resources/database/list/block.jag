@@ -1,0 +1,30 @@
+<%
+include('/jagg/constants.jag');
+include("/jagg/config_reader.jag");
+include("/jagg/util.jag");
+
+jagg.block("resources/database/list", {
+    initialize: function (data) {
+
+    },
+    getInputs: function () {
+        return {
+            "applicationKey": null
+        }
+    },
+
+ getOutputs:function (inputs) {
+       var log = new Log();
+       var applicationKey = request.getParameter("applicationKey");
+       var hasCreateResourcePermissions= hasUILevelResourceCreationPermission(applicationKey);
+       var helpTips = jagg.module("help").getHelpTips("resources-databases");
+
+       return {
+           "hasCreateResourcePermissions": hasCreateResourcePermissions,
+	       "helpTips":helpTips
+       };
+   }
+
+
+});
+%>

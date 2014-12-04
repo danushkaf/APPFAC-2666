@@ -1,0 +1,38 @@
+<%
+include("/jagg/jagg.jag");
+include("/jagg/constants.jag");
+include("/jagg/config_reader.jag");
+
+var log = new Log('modules/resources/apis/delete/delete.jag');
+var modManager = jagg.module("manager");
+var carbon = require('carbon');
+var server = carbon.server;
+var multitenancy = carbon.multitenancy;
+
+/**
+ * Delete the application {@code appKey} from API Manager. This will remove the all the subscriptions associated with
+ * the {@code appKey} as well.
+ *
+ * @param appKey application key
+ */
+var deleteApplicationFromApiM = function(appKey){
+    var tenantDomain = modManager.getTenantDomain();
+    var context=multitenancy.getPrivilegedCarbonContext();
+    var tenantManager= multitenancy.getTenantManager();
+
+    try {
+        context.startTenantFlow();
+        context.getThreadLocalCarbonContext().setTenantId(tenantManager.getTenantId(tenantDomain));
+        context.getThreadLocalCarbonContext().setTenantDomain(tenantDomain);
+        var service = server.osgiService('org.wso2.carbon.appfactory.apiManager.integration.APIManagerIntegrationService') ;
+        service.removeApplication(appKey, session.get("SAML_TOKEN"));
+        log.info("Successfully deleted API Manager application: "+appKey+
+                  " tenant: "+tenantDomain);
+    } catch (e) {
+        log.error("Error while deleting application from api manager. the list of APIs of appKey "+ appKey +
+                  " tenant: "+tenantDomain+"\n"+ e.message);
+        throw "Error while getting the list of APIs of appKey "+ appKey+" tenant: "+tenantDomain;
+    }
+};
+
+%>

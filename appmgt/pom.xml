@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.wso2.appfactory</groupId>
+  <artifactId>appmgt</artifactId>
+  <version>2.1.0</version>
+  <packaging>pom</packaging>
+  <name>WSO2 AppFactory - Application Management Web Application</name>
+  <description>WSO2 AppFactory - Application Management Web Application</description>
+  <dependencies>
+    <dependency>
+      <groupId>org.wso2.appfactory</groupId>
+      <artifactId>wso2appfactory-p2-profile</artifactId>
+      <version>2.0.0</version>
+      <type>pom</type>
+    </dependency>
+  </dependencies>
+  <repositories>
+    <repository>
+      <id>wso2 repo</id>
+      <url>http://dist.wso2.org/maven2</url>
+    </repository>
+  </repositories>
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>2.4</version>
+        <executions>
+          <execution>
+            <id>2-dist</id>
+            <phase>package</phase>
+            <goals>
+              <goal>attached</goal>
+            </goals>
+            <configuration>
+              <descriptors>
+                <descriptor>${basedir}/src/bin.xml</descriptor>
+              </descriptors>
+              <appendAssemblyId>false</appendAssemblyId>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

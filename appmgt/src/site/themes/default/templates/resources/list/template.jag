@@ -1,0 +1,654 @@
+<% jagg.template("resources/list", function(inputs, outputs, jagg) { %>
+<%
+    var applicationName = request.getParameter("applicationName");
+    var applicationKey = request.getParameter("applicationKey");
+    var hasTenantAdminPermission = outputs.hasTenantAdminPermission;
+    var log = new Log("site/themes/default/templates/resources/list/template.jag");
+
+    var apiManagerStoreUrl = getProperty(API_MANAGER_STORE_URL);
+    var apiMStoreSubscriptionUrl = getProperty(API_MANAGER_STORE_SUBSCRIPTION_URL);
+    var apiManagerServerUrl = getProperty(API_MANAGER_SERVER_URL);
+    var apiManagerButton = getProperty(API_MANAGER_BUTTON);
+
+    var hasCreatePermission = jagg.module("permission").isUserAccessGranted(inputs.applicationKey, PERMISSION_DATASOURCE_CREATE);
+    var helpTips = outputs.helpTips;
+    %>
+
+    <input type="hidden" name="userName"  id="userName" value='<%= jagg.getUser() %>'/>
+
+<script type="text/javascript">
+
+//this is for zeroclipboard pluging
+     var _defaults = {
+        moviePath:"<%=jagg.getAbsoluteUrl(jagg.getThemeFile('assets/js/vendor/ZeroClipboard/ZeroClipboard.swf'))%>",        // URL to movie
+        trustedDomains:    undefined,                  // Domains that we should trust (single string or array of strings)
+        hoverClass:        "zeroclipboard-is-hover",   // The class used to hover over the object
+        activeClass:       "zeroclipboard-is-active",  // The class used to set object active
+        allowScriptAccess: "sameDomain",               // SWF outbound scripting policy
+        useNoCache:        true,                       // Include a nocache query parameter on requests for the SWF
+        amdModuleId:       null                       // AMD module ID or path to access the ZeroClipboard object
+
+     };
+     ZeroClipboard.setDefaults(_defaults);
+
+
+//[cdata[
+function convertDataSourcesToPrintableFormat(){
+    $('#dbSection').show();
+    $('#dbSection').append('<span id="dbSectionSpinner" class="icon-spinner icon-spin icon-large spin-large" style="margin:5px;font-size:30px;width:40px;height:40px;line-height:40px;"></span>');
+	jagg.post("../blocks/resources/datasource/get/ajax/list.jag", {
+        action: "getDatasourceInfo",
+        applicationKey: "<%=applicationKey%>"
+    }, function (result) {
+        if (result !== undefined) {
+            var datasourcesByName = jQuery.parseJSON(result);
+			constructDSHTML(datasourcesByName);
+        }
+    }, function (jqXHR, textStatus, errorThrown) {
+    	$('#contentHeader').html("");
+
+    	if (jqXHR.status != 0){
+            jagg.message({content:'Error occurred while reading datasources',type:'error', id:'datasourceoverview' });
+    	}
+
+    });
+}
+
+function constructDSHeaders(){
+    return '<li class="list_row_item first_list_row_item">' +
+						'<ul class="list_row first_list_row">' +
+							'<li class="col-3">' +
+								'<h2 class="list_col_heading">Name</h2>' +
+							'</li>' +
+							'<li class="col-4">' +
+								'<h2 class="list_col_heading">Description</h2>' +
+							'</li>' +
+						'</ul>' +
+					'</li>';
+}
+
+function constructDSHTML(datasourcesByName){
+    var $table='';
+    var count = 0;
+
+    for (var index in datasourcesByName) {
+        var datasources = datasourcesByName[index];
+        if (datasources.length > 0 ) {
+            var stages = [];
+            var description = "";
+            var name = "";
+            for (var i in datasources) {
+                var datasource = datasources[i];
+                if (i == 0) {
+                    description = datasource.description;
+                    name = datasource.name;
+                }
+                stages[i] = datasource.stage;
+            }
+            count++;
+            $table += constructDSRow(name, description, stages);
+        }
+    }
+
+    $('#dbSectionSpinner').hide();
+    if(count == 0){
+    	$('#contentHeader').html("<div class='noData-message'>Data Sources have not been created yet.</div>");
+    }else{
+    	$('#dbSection').empty().append(constructDSHeaders()).append($table);
+    }
+
+    $('.dsLink').click(function(){
+        var dsName=$(this).attr('data-dsname');
+        var stage=$(this).attr('stage');
+        window.location.replace("<%=jagg.getAbsoluteUrl("/site/pages/editdatasource.jag")%>?applicationName=<%=applicationName%>&applicationKey=<%=applicationKey%>&dsName="+dsName+"&currentStage="+stage);
+    });
+     $('.stage_label').click(function(){
+        var dsName=$(this).attr('data-dsname');
+        var stage=this.innerHTML;
+        window.location.replace("<%=jagg.getAbsoluteUrl("/site/pages/editdatasource.jag")%>?applicationName=<%=applicationName%>&applicationKey=<%=applicationKey%>&dsName="+dsName+"&currentStage="+stage);
+    });
+
+	    	ZeroClipboard.setDefaults(_defaults);
+            var clip = new ZeroClipboard($('.copy_link'));
+            clip.on( 'load', function(client) {});
+            clip.on( 'complete', function(client, args) {
+                $('.copy_link').qtip({
+                        content:{
+                                attr: 'data-tooltip'
+                        },
+                        show:{
+                                event:'click',
+                                ready:true
+                        },
+                        hide:{
+                                distance:20
+                        }
+                    });
+            });
+            clip.on( 'mousedown', function(client) { } );
+
+
+}
+
+    function constructDSRow(name , description, stages){
+
+        var $row='<li class="list_row_item first_list_row_item">'+
+                '<ul class="list_row first_list_row">'+
+                '<li class="col-3">'+
+                '<div class="list_col_content">'+
+                '<ul class="list"><li>' + name +
+                '</li></ul>'+
+                '</div>'+
+                '</li>'+
+
+                '<li class="col-4 datasources_description_col">'+
+                '<div class="list_col_content">' +
+                '<ul class="list">'+
+                '<li>' +
+                description + '</br></br>' +
+                '</li>' +
+                '</ul>' +
+                '</div>'+
+                '</li>'+
+
+                '</ul>'+
+                '<div id="code'+name+'" style="display: none;" class="code">'+
+                '</div><div></li>';
+        return $row;
+    }
+
+    function getEnvironmentParameters(environments,name){
+		var content='';
+		var i=0;
+		for(var environment in environments){
+			var url="<%=jagg.getAbsoluteUrl("/site/pages/editdatasource.jag")%>?applicationName=<%=applicationName%>&applicationKey=<%=applicationKey%>&dsName="+name+"&currentStage="+environment;
+
+		    i++;
+		    content+='<dt><a href="'+url+'" class="tag" style="margin-left:0px">'+
+		    		 environment+
+		    		 '</a></dt>';
+		    		 var params=environments[environment];
+            content+='<dd style="padding-left:6px;font-size: 0.857142857em;">'+
+                     params.url+
+                     '<a id="copy'+i+'" class="icon_link_small copy_link push_left_10 pointer_cursor" title="Copy DB URL " data-clipboard-text="'+ params.url+'" data-tooltip="Copied!"><span class="icon-copy"></span></a>'+
+                     '</dd>';
+		}
+		return content;
+
+    }
+
+
+
+
+function isAppOwner() {
+    jagg.post("../blocks/application/get/ajax/list.jag", {
+                action:"getAppOwner",
+                applicationKey:$("#applicationKey").val()
+            },
+            function (appowner) {
+            	var loggedInuser = $("#userName").val();
+            	var isAppOwner = (appowner.trim == loggedInuser.trim)?true:false;
+                var tenant = loggedInuser.substring(loggedInuser.lastIndexOf('@') + 1);
+
+            	if(isAppOwner){
+
+		          	var url =  '<%=apiMStoreSubscriptionUrl%>' + "?tenant=" + tenant;
+
+                    var buttonSectionEnterprise='<ul class="list_table push_top_20">'+
+                        					'<li class="list_row_item no_bottom_border">'+
+                        						'<div>'+
+                    							  '<div class="af_container">'+
+                            							'<div class="af_row">'+
+                                							'<div class="col-3">'+
+                                    							'<div class="list_col_content"  id="btnItem">'+
+                                        								'<a id="enterpriseAPIButton" class="btn main" href="'+url+'" target="_blank""><%=apiManagerButton%></a>'+
+                                    							 '</div>'+
+                                							'</div>'+
+                                							'</div>'+
+                            						'<div>'+
+                       						 '</div>'+
+                    					'</li></ul>';
+
+                    $('#subcscribe_btn_container_enterprise').html(buttonSectionEnterprise);
+                    $('#enterpriseAPIButton').click(function(){addApi('<%=applicationKey%>')});
+                }
+                var buttonSectionExternal='<ul class="list_table push_top_20">'+
+		 			 '<li class="list_row_item no_bottom_border">'+
+				'<div>'+
+					  '<div class="af_container">'+
+						'<div class="af_row">'+
+						   <%if(outputs.hasCreateResourcePermissions){%>
+							'<div class="col-3">'+
+								'<div class="list_col_content">'+
+   								'<a class="btn main" href="<%=jagg.getAbsoluteUrl("/site/pages/externalapi.jag")%>?applicationName=<%=applicationName%>&applicationKey=<%=applicationKey%>">Add External API</a>'+
+									'</div>'+
+							'</div>'+
+							<%}%>
+							'</div>'+
+						'<div>'+
+			 			'</div>'+
+			   '</li></ul>';
+                $('#subcscribe_btn_container').html(buttonSectionExternal);
+            	getAPIsOfAppOwnerApp(appowner,tenant,isAppOwner);
+            },
+            function (jqXHR, textStatus, errorThrown) {
+                //add the error label in the grid
+
+            });
+}
+
+function getAPIsOfAppOwnerApp(appowner,tenant, isAppOwner) {
+    $("#apiSection").show();
+    $("#apiSection").empty().append('<span class="icon-spinner icon-spin icon-large spin-large" style="margin:5px;font-size:30px;width:40px;height:40px;line-height:40px;"></span>');
+    jagg.post("../blocks/resources/apis/get/ajax/get.jag", {
+        action:"getAPIsOfApp",
+        applicationKey:$("#applicationKey").val(),
+        appowner:appowner
+    },
+    function (result) {
+    	parsedResult=jQuery.parseJSON(result);
+		if(parsedResult.length == 0){
+            if(isAppOwner){
+                var url = '<%=apiManagerStoreUrl%>' + "?tenant=" + tenant;
+                var $elm = $('<a id="enterpriseAPIButton" class="btn main" href="'+ url +'" target="_blank"><%=apiManagerButton%></a>').click(function(){addApi('<%=applicationKey%>')});
+                $('#btnItem').empty().append($elm);
+            }
+            $("#apiSection").empty().append("<div class='noData-message'>APIs have not been subscribed to yet.</div>");
+            return;
+        }
+
+    	 var tableBodyHTML = '<li class="list_row_item first_list_row_item">'
+	            						+'<ul class="list_row first_list_row">'
+	            							+'<li class="list_col col-3">'
+	            								+'<h2 class="list_col_heading">Name</h2>'
+	            							+'</li>'
+							                +'<li class="list_col col-4">'
+							                	+'<h2 class="list_col_heading">Description</h2>'
+							                +'</li>'
+							              +'</ul>'
+	                                 +'</li>';
+
+
+
+	        	for(var i=0; i < parsedResult.length;i++){
+	        		var API = parsedResult[i];
+	                	var endpointUrl = ' <%=apiManagerStoreUrl%>'+'/'+API.name+'/'+API.version;
+	            		 tableBodyHTML +='<li class="list_row_item first_list_row_item">'+
+	                     '<ul class="list_row first_list_row ">'+
+	                         '<li class="list_col col-3">'+
+	                             '<div class="list_col_content">'+
+	                                      API.name +
+	                             '</div>'+
+	                         '</li>'+
+	                         '<li class="list_col col-4">'+
+	                         	'<div class="list_col_content">'+ API.description + '</div>'+
+	                         '</li>'+
+	                     '</ul>'+
+	                '</li>';
+	        	}
+
+    	$("#apiSection").empty().append(tableBodyHTML);
+
+    },
+    function (jqXHR, textStatus, errorThrown) {
+
+        if (jqXHR.status != 0){
+            jagg.message({content:'Error occurred while reading API information',type:'error', id:'resourcesoverview' });
+        }
+        hideSpin();
+        $("#APITable").hide();
+    });
+}
+
+function showUneditableMsg(name){
+    jagg.message({
+        content: 'Resource ' + name + ' is an uneditable resource',
+        type: 'warning'
+    });
+}
+
+function convertProperties(properties){
+	var result={};
+    for(var prop in properties){
+		var tmpProp=properties[prop];
+		var environments=tmpProp.environments;
+		for(var env in environments){
+			var tmpEnv=environments[env];
+			var tmpEnvfromResult=result[env];
+			if(tmpEnvfromResult==undefined){
+			    tmpEnvfromResult=result[env]=[];
+			}
+			tmpEnvfromResult.push(prop);
+		}
+
+
+    }
+   return result;
+}
+
+  function prepareDataModel(resultJson){
+    	var tableModel = {};
+		var j = 0;
+		for(var apiName in resultJson){
+			var tableRowModel = {};
+			tableRowModel['name'] = apiName;
+			var details = resultJson[apiName];
+		    var stages = {};
+			for (var i = 0; i < details.length; i++) {
+				var envDetail = details[i];
+				var stageModel = {};
+				for(var envName in envDetail){
+					var apiData = envDetail[envName];
+					for (var k = 0; k < apiData.length; k++) {
+						var data = apiData[k];
+						if(data.name == 'authentication'){
+							tableRowModel[data.name] = data.value;
+						}else{
+							stageModel[data.name] = data.value;
+						}
+
+					}
+					stages[envName]	= stageModel;
+				}
+			}
+			 tableRowModel['stages']= stages;
+			 tableModel[j++] = tableRowModel;
+		}
+		return tableModel;
+    }
+
+function drawApisTable() {
+    $("#externalapi").show();
+    $("#externalapi").empty().append('<span class="icon-spinner icon-spin icon-large spin-large" style="margin:5px;font-size:30px;width:40px;height:40px;line-height:40px;"></span>');
+    jagg.post("../blocks/resources/externalapi/get/ajax/list.jag", {
+            action:"getExternalAPIs",
+            applicationKey:$("#applicationKey").val()
+        },
+        function (result) {
+            var elementIds=[];
+			var apiIndex;
+			var resultJson = JSON.parse(result);
+			if(jQuery.isEmptyObject(resultJson)){
+        		$("#externalapi").empty().append("<div class='noData-message'>No External APIs are created yet.</div>");
+        	}
+			else{
+				var tableModel = prepareDataModel(resultJson);
+				var tableBodyHTML = "";
+				var url = "#";
+				var count = 0;
+				for (var index in tableModel) {
+					tableBodyHTML += '<div class="list_col_content">';
+				    var row = tableModel[index];
+			        elementIds.push(row.name);
+
+				      count = 0;
+				    for (var stageName in row.stages) {
+				        var stageValues = row.stages[stageName];
+				        url = "<%=jagg.getAbsoluteUrl("/site/pages/externalapi.jag")%>?applicationName=<%=applicationName%>&applicationKey=<%=applicationKey%>&pagePath=apimanager&isEdit=true&resourceName=" + row.name+"&environment="+stageName;
+
+				        if (count++ == 0) {
+				            tableBodyHTML += '<li class="list_row_item first_list_row_item">' + '<ul class="list_row first_list_row">'
+				            				+ '<li class="col-3">' + '<div class="list_col_content">' + '<ul class="list">'
+				            				+ '<li>' + row.name + '</li>' + '</ul>';
+				            tableBodyHTML += '</div></li><li class="col-9">' + '<div class="list_col_content">' + '<ul class="list">'
+				            				+ '<li>' + row.authentication + '</li>' + '</ul> </div></li>';
+
+				        }
+				    }
+
+				   		tableBodyHTML+= '</li></ul>';
+						tableBodyHTML+='</div>';
+				}
+
+				var initTableTxt = '<li class="list_row_item first_list_row_item">' +
+	            			'<ul class="list_row first_list_row">' +
+	            			'<li class="col-3">' +
+	            			'<h2 class="list_col_heading">Name</h2>' +
+	            			'</li>' +
+	            			'<li class="col-9">' +
+	            			'<h2 class="list_col_heading">Authentication</h2>'+
+	            			'</li>';
+				$("#externalapi").empty().append(initTableTxt).append(tableBodyHTML);
+        	}
+        },
+        function (jqXHR, textStatus, errorThrown) {
+            // add the error label in the grid
+        });
+
+}
+
+function hideSpin(){
+	$('div#configlist> span.icon-spinner').remove();
+}
+
+function toggleEditMode(editBtn) {
+    var self = $(editBtn);
+    $('.hiddenEditMode', self.parent()).show('fast');
+    self.hide(); //Hide the button
+    self.next().show('fast'); //Show the edit pane
+}
+
+function toggleEditModeWithCancel(cancel) {
+    var hiddenEditFormElement = $(cancel).parent().parent();
+    hiddenEditFormElement.hide(); //Hide the edit plane
+    hiddenEditFormElement.prev().show(); //Show the edit button
+}
+
+$(document).ready(function(){
+	isAppOwner();
+    setOverviewHelpTips(<%= helpTips %>);
+    convertDataSourcesToPrintableFormat();
+    drawApisTable();
+    var hasTenantAdminPermission = ($("#hasTenantAdminPermission").val() === 'true');
+    if(hasTenantAdminPermission){
+        userRealmSupportedEventHandler();
+        getUserRealmSupported();
+    }
+
+
+});
+
+function userRealmSupportedEventHandler(){
+ $('#enable_user_realm_check').click(function(){
+            if($('#enable_user_realm_check').is(':checked')){
+                $(this).attr('checked','checked');
+                setUserRealmSupport('true');
+            }else{
+                $(this).removeAttr('checked');
+                setUserRealmSupport('false');
+            }
+
+
+});
+}
+function getUserRealmSupported(){
+    jagg.post("../blocks/resources/userrealm/ajax/realm.jag", {
+        action:'isUserRealmSupported',
+        applicationKey:$("#applicationKey").attr('value')
+    },
+    function (result) {
+        var resultJSON = jQuery.parseJSON(result);
+        if(resultJSON.error==='true'){
+            jagg.message({content:'Error occurred while reading user realm support for application.',type:'error', id:'resourcesoverview' });
+        }else if(resultJSON.message==='true'){
+           $('#enable_user_realm_check').attr('checked','checked');
+        }else if(resultJSON.message==='false'){
+           $('#enable_user_realm_check').removeAttr('checked');
+        }
+    });
+}
+function setUserRealmSupport(isSet) {
+    var action = 'disableUserRealmSupport';
+    if('true'===isSet){
+        action = 'enableUserRealmSupport';
+    }
+    jagg.post("../blocks/resources/userrealm/ajax/realm.jag", {
+        action:action,
+        applicationKey:$("#applicationKey").attr('value')
+    });
+}
+
+
+
+function addApi(applicationKey) {
+    jagg.post("../blocks/resources/apis/add/ajax/add.jag", {
+        action:"createApplication",
+        applicationKey:applicationKey,
+        username:$("#userName").val()
+    });
+}
+
+function setOverviewHelpTips(helpTips){
+                 $("#datasourceHelp").html(helpTips.datasourceHelp);
+                 $("#apiHelp").html(helpTips.apiHelp);
+                 $('#externalApiHelp').html(helpTips.apiHelp);
+                 $("#propertyHelp").html(helpTips.propertyHelp);
+                 $("#userRealmHelp").html(helpTips.userRealmHelp);
+
+
+                 $("#propertiesSection").html('<div class="noData-message">'+helpTips.noProperties+'</div>');
+                 $("#externalapi").html('<div class="noData-message">'+helpTips.noAPIs+'</div>');
+                 $("#dbSection").html('<div class="noData-message">'+helpTips.noDatasources+'</div>');
+}
+
+//]]
+</script>
+
+<input type="hidden" name="applicationKey" id="applicationKey" value="<%=applicationKey%>"/>
+<input type="hidden" name="userName" id="userName" value="<%=userName%>"/>
+<input type="hidden" name="hasTenantAdminPermission" id="hasTenantAdminPermission" value="<%=hasTenantAdminPermission%>"/>
+
+<div class="container">
+    <article class="main">
+            <% jagg.includeBlock("page/messages", null); %>
+            <% jagg.includeBlock("page/eventing", {"applicationKey":null,"pageName":PAGES.RESOURCES}); %>
+	        <% jagg.includeBlock("page/notification-wall", {"wall_name":applicationKey+" - App Wall","applicationKey":applicationKey,"pageName":"App Home"}); %>
+            <header>
+                <div class="content">
+                    <h1>Runtime Configs</h1>
+                 </div>
+            </header>
+
+            <% jagg.includeBlock("resources/menu", {page:'overview',applicationName:applicationName,applicationKey:applicationKey}); %>
+            <% jagg.includeBlock("page/help", {"section": "resourcesOverview"}); %>
+            <section class="separator">
+                <div class="content clear" >
+                    <h2 class="next_page"><a href="<%=jagg.getAbsoluteUrl("/site/pages/listDatasources.jag")%>?applicationName=<%=applicationName%>&applicationKey=<%=applicationKey%>">Datasources<span class="icon-circle-arrow-right"></span></a></h2>
+
+			<div class="help-block"><span class="help-icon">?</span> <span id="datasourceHelp"></span></div>
+                    <ul class="list_table push_top_20" id="dbSection" >
+
+                     </ul>
+					<!--div align="center" id="configlist" style="margin-top: 10px;">
+						<span class="icon-spinner icon-spin icon-large"></span>
+					</div-->
+                     <ul class="list_table push_top_20">
+                        <li class="list_row_item no_bottom_border">
+                            <div>
+                                <div class="af_container">
+                                    <div class="af_row">
+                                        <div class="col-3">
+                                        <%if(outputs.hasCreateResourcePermissions){%>
+                                        <div class="list_col_content">
+                                                <a href="javascript:location.href='<%=jagg.getAbsoluteUrl("/site/pages/dbadministration.jag")%>?applicationName=<%=applicationName%>&applicationKey=<%=applicationKey%>&isDefaultMode=true&isEdit=false'" class="btn main">Add Datasource</a>
+                                            </div>
+                                        </div>
+                                        <%}%>
+                                    </div>
+                                    </div>
+                                </div>
+                            </ul>
+                       </li>
+                    </ul>
+                </div>
+            </section>
+
+            <div class="clearfix"></div>
+            <hr />
+            <section class="separator">
+                <div class="content clear">
+                    <h2 class="next_page"><a href="<%=jagg.getAbsoluteUrl("/site/pages/apimanager.jag")%>?applicationName=<%=applicationName%>&applicationKey=<%=applicationKey%>">Enterprise APIs <span class="icon-circle-arrow-right"></span></a></h2>
+                    <div class="help-block"><span class="help-icon">?</span> <span id="apiHelp"></span></div>
+                    <ul class="list_table push_top_20" id="apiSection"><div class='noData-message'>APIs have not been subscribed to yet.</div></ul>
+                    <div id="subcscribe_btn_container_enterprise"class="list_col_content"></div>
+                </div>
+            </section>
+            <div class="clearfix"></div>
+            <hr />
+            <section class="separator">
+                <div class="content clear">
+                    <h2 class="next_page"><a href="<%=jagg.getAbsoluteUrl("/site/pages/apimanager.jag")%>?applicationName=<%=applicationName%>&applicationKey=<%=applicationKey%>">External APIs <span class="icon-circle-arrow-right"></span></a></h2>
+                    <div class="help-block"><span class="help-icon">?</span> <span id="externalApiHelp"></span></div>
+                    <ul class="list_table push_top_20" id="externalapi"></ul>
+                    <div id="subcscribe_btn_container"class="list_col_content"></div>
+                    <ul class="list_table push_top_20" >
+                    <!--      <li class="list_row_item no_bottom_border">
+                    <ul class="list_row">
+                    <li class="list_col first_list_col resources_apiname_col">
+
+
+
+
+                    </li>
+                    <li class="list_col resources_apidescription_col">
+                    <div class="list_col_content">
+                    </div>
+                    </li>
+                    <li class="list_col last_list_col resources_apiprovider_col">
+                    <div class="list_col_content">
+                    </div>
+                    </li>
+                    </ul>
+                    </li> -->
+                    </ul>
+                </div>
+            </section>
+
+            <div class="clearfix"></div>
+            <hr />
+            <section class="separator">
+                <div class="content clear">
+                    <h2 class="next_page"><a href="<%=jagg.getAbsoluteUrl("/site/pages/resources.jag")%>?applicationName=<%=applicationName%>&applicationKey=<%=applicationKey%>">Properties <span class="icon-circle-arrow-right"></span></a></h2>
+
+		    <div class="help-block"><span class="help-icon">?</span> <span id="propertyHelp"></span></div>
+                    <% jagg.includeBlock("resources/registry/list", {"isNamesOnly":false});%>
+                    <%if(outputs.hasCreateResourcePermissions){%>
+                        <ul class="list_table">
+                            <li class="list_col first_list_col resources_endregname_col">
+                                <div>
+                                <div class="af_container">
+                                    <div class="af_row">
+                                        <div class="col-3">
+                                <div class="list_col_content">
+                                    <a class="btn main" href="<%=jagg.getAbsoluteUrl("/site/pages/resources-add.jag")%>?applicationName=<%=applicationName%>&applicationKey=<%=applicationKey%>&pagePath=configureenvironment">Add Properties</a>
+                                </div>
+                                </div>
+                                </div>
+                                </div>
+                                </div>
+                            </li>
+                        </ul>
+                    <%}%>
+                </div>
+            </section>
+             <%
+    if (hasTenantAdminPermission == true) { %>
+            <div class="clearfix"></div>
+            <hr />
+            <section class="separator">
+                <div class="content clear">
+                <h2 class="next_page"><a>User Realm Support <span class="icon-circle-arrow-right"></span></a></h2>
+
+			<div class="help-block"><span class="help-icon">?</span> <span id="userRealmHelp"></span></div>
+                    <input type="checkbox" name="enable_user_realm" id="enable_user_realm_check"> Enable UserRealm Support</input>
+                </div>
+            </section>
+            <div class="clearfix"></div>
+            <%
+    }
+    %>
+       </article>
+       <input type="hidden" name="userName"  id="loggeduserName" value='<%= jagg.getUser() %>'/>
+</div><!-- /container -->
+
+<% }); %>

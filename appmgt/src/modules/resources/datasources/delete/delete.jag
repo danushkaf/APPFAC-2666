@@ -1,0 +1,57 @@
+<%
+include("/jagg/jagg.jag");
+include("/jagg/constants.jag");
+include("/jagg/config_reader.jag");
+
+var log = new Log('modules/resources/datasources/delete/delete.jag');
+var modManager = jagg.module("manager");
+
+/**
+ * Deletes all the data sources associated with the {@code applicationId} from all the stages.
+ *
+ * @param applicationId application id
+ */
+var deleteAllDataSources = function (applicationId) {
+    var ws = require('ws');
+    var options = [];
+    var failedStages = [];  // this is used to track deletion failed stages and send a descriptive err msg
+    options.useSOAP = 1.1;
+    options.action = "urn:deleteAllDataSources";
+    var tenantDomain = modManager.getTenantDomain();
+
+    var payload ='<p:deleteAllDataSources xmlns:p="http://datasource.ext.appfactory.carbon.wso2.org">'+
+                    '<xs:applicationID xmlns:xs="http://datasource.ext.appfactory.carbon.wso2.org">'+applicationId+'</xs:applicationID>'+
+                 '</p:deleteAllDataSources>';
+
+
+    var stages = getProperties('ApplicationDeployment.DeploymentStage');
+    for (var i = 0; i < stages.length; i++) {
+        var stageName = stages[i];
+        var endPoint = getProperty('ApplicationDeployment.DeploymentStage.' + stageName + '.DeploymentServerURL') +
+                       'AppFactoryNDataSourceAdmin';
+        try {
+            var deleteDataSourceService = new ws.WSRequest();
+            modManager.setAuthHeaders(options);
+            deleteDataSourceService.open(options, endPoint, true);
+            deleteDataSourceService.send(payload);
+            log.info("Successfully deleted all the datasources in stage " + stageName +
+                      " for application: "+applicationId+" tenant:"+ tenantDomain);
+        } catch (e) {
+            // not throwing an exception here since this should not interrupt deletion of other stages
+            log.error("Error while deleting all the datasources in stage " + stageName +
+                      " for application: "+applicationId+" tenant:"+ tenantDomain+"\n" + e.message);
+            failedStages.push(stageName);
+        }
+
+    }
+
+    if(failedStages.length > 0) {
+        var errMsg = "Error occurred while deleting all the datasources from stage(s): "+failedStages.join(", ")+
+                " for application: "+applicationId+" tenant:"+ tenantDomain;
+        log.error(errMsg);
+        throw errMsg;
+    }
+
+};
+
+%>

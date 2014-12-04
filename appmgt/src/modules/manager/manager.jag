@@ -1,0 +1,306 @@
+<%
+include("/jagg/jagg.jag");
+include("/jagg/constants.jag");
+include("/jagg/config_reader.jag");
+
+var log = new Log("module/manager/manager.jag");
+
+var cookieRefreshInterval = getProperty(COOKIE_REFRESH_INTERVAL);
+var clock = new Date();
+var carbon = require('carbon');
+var server = carbon.server;
+var multitenancy = carbon.multitenancy;
+
+
+var setAuthHeaders = function (options, httpHeaders, username) {
+    if(!username){
+        username = jagg.getUser();
+    }
+    if(!httpHeaders){
+        httpHeaders = [];//new Array();
+    }
+    var AppFactoryUtil = Packages.org.wso2.carbon.appfactory.common.util.AppFactoryUtil;
+    var authHeader = {name : "Authorization", value : String(AppFactoryUtil.getAuthHeader(username))};
+    httpHeaders.push(authHeader);
+    options["HTTPHeaders"] = httpHeaders;
+};
+
+
+/* 
+ * getBackendCookie returns returns logged in user's server session string.
+ */
+var getBackendCookie = function (serverUrl) {
+    if(!serverUrl){
+        throw "Can not take a backend cookie for empty backend server URL:"+serverUrl;
+    }
+
+    try {
+        var timeNow = clock.getTime();
+        if (session.get(BACKEND_COOKIE_LAST_UPDATED_TIME + serverUrl) == null) {
+            session.put(BACKEND_COOKIE_LAST_UPDATED_TIME + serverUrl, timeNow);
+        }
+        var backendCookieLastUpdatedTime = session.get(BACKEND_COOKIE_LAST_UPDATED_TIME + serverUrl);
+        if (((timeNow - backendCookieLastUpdatedTime) > cookieRefreshInterval) || (session.get(APPFAC_BACKEND_COOKIE + serverUrl) == null)) {
+            updateBackendCookie(serverUrl);
+            session.put(BACKEND_COOKIE_LAST_UPDATED_TIME + serverUrl, timeNow);
+        }
+        if(log.isDebugEnabled()){
+            log.debug("USING backend cookie:"+ session.get(APPFAC_BACKEND_COOKIE + serverUrl) +" for serverURL:"+serverUrl +" at:"+new Date());
+        }
+        return session.get(APPFAC_BACKEND_COOKIE + serverUrl);
+    } catch (e) {
+        log.error("Failed to get backend cookie for serverUrl: " + serverUrl + " \n" + e.message);
+        throw "Failed to get backend cookie for serverUrl:"+serverUrl;
+    }
+};
+/**
+ * This method get an authenticated cookie from backend serverUrl using current logged in user saml token.
+ * If failed, throw an exception.
+ * @param serverUrl - backend server url, eg; application server url.
+ */
+var updateBackendCookie = function (serverUrl) {
+    var token = getToken();
+    var security = require("sso");
+    var ssoRelyingParty = new security.SSORelyingParty(getProperty(SSO_NAME));
+    var encodedToken = ssoRelyingParty.xmlEncode(token);
+    var ws = require("ws");
+    var request = new ws.WSRequest();
+    var options = new Array();
+    options.useSOAP = 1.2;
+    options.action = "urn:login";
+    var endPoint = serverUrl + "SAML2SSOAuthenticationService";
+    var payload = '<sso:login xmlns:sso="http://sso.saml2.authenticator.identity.carbon.wso2.org"><sso:authDto><xsd:response xmlns:xsd="http://dto.sso.saml2.authenticator.identity.carbon.wso2.org/xsd">' + encodedToken + '</xsd:response></sso:authDto></sso:login>';
+    request.open(options,endPoint, false);
+    request.send(payload);
+
+    var response = request.responseE4X;
+
+    var ns = new Namespace("http://sso.saml2.authenticator.identity.carbon.wso2.org");
+    var result = response.ns::["return"].text();
+    if(result){
+        var cookieString = request.getResponseHeader("Set-Cookie");
+        var cookie = cookieString.split(";")[0];
+        session.put(APPFAC_BACKEND_COOKIE + serverUrl, cookie.toString());
+        if(log.isDebugEnabled()){
+            log.debug("GOT A NEW cookie:"+cookie.toString()+" for serverURL:"+serverUrl+" at time:"+new Date());
+        }
+    } else{
+        var error ="Current logged in user:"+jagg.getUser()+" could not authenticate with backend:"+serverUrl+". Please check backend server logs for authentication failure.";
+        log.error(error);
+        throw error;
+    }
+};
+
+var getToken = function (){
+	if(session.get(SAML_RESPONSE_TOKEN_SESSION_KEY)){
+		return session.get(SAML_RESPONSE_TOKEN_SESSION_KEY);
+	} else if(session.get(SAML_ASSERTION_TOKEN_SESSION_KEY)){
+		return session.get(SAML_ASSERTION_TOKEN_SESSION_KEY);
+	} else {
+		return null;
+	}
+};
+
+/*
+ *   getTenantDomain is used to logged user's domain name.
+ */
+var getTenantDomain = function () {
+
+    var tenantDomain = session.get(TENANT_DOMAIN_NAME);
+    if ( tenantDomain == null) {
+        var username = jagg.getUser();
+        if(username){
+            tenantDomain = SUPER_TENANT_DOMAIN_NAME;
+            if (username.indexOf("@") != -1) {
+                tenantDomain = username.substring(username.lastIndexOf('@') + 1);
+            } else {	// else assume super tenant
+                tenantDomain = SUPER_TENANT_DOMAIN_NAME;
+            }
+            session.put(TENANT_DOMAIN_NAME, tenantDomain.toString().toLowerCase());
+        }
+    }
+    return tenantDomain;
+};
+
+
+var getTenantAwareUsername = function (username) {
+	if(!username){
+		username = jagg.getUser();
+	}
+    var tenantAwareUsername = 'null';
+    if (username.indexOf("@") != -1) {
+        tenantAwareUsername = username.substring(0, username.lastIndexOf('@'));
+    } else {        // else assume super tenant
+        tenantAwareUsername = SUPER_TENANT_DOMAIN_NAME;
+    }
+    return tenantAwareUsername;
+};
+
+/*
+ *   getDomainlessUserName is used to get the user name without the domain name.
+ */
+var getDomainlessUserName = function () {
+	var username = jagg.getUser();
+	if(!username){
+        return null;
+    }
+    var separator = "@";
+    var strippedUserName;
+    var index = username.lastIndexOf(separator);
+    if (index == -1)
+        strippedUserName = username;
+    else
+        strippedUserName = username.substring(0, index);
+
+    return strippedUserName;
+};
+
+var getTenantId = function () {
+    var carbon = require('carbon');
+    var server = carbon.server;
+    var tenantDomain = getTenantDomain();
+    var tenantManager = multitenancy.getTenantManager();
+    return tenantManager.getTenantId(tenantDomain);
+};
+
+var getOTtenantProperty=function(){
+    var tenantDomain=getTenantDomain() ;
+    var context=multitenancy.getPrivilegedCarbonContext();
+    var tenantManager= multitenancy.getTenantManager();
+    var tenantId=tenantManager.getTenantId(tenantDomain);
+    var index=-1;
+    try{
+        context.startTenantFlow();
+        context.getThreadLocalCarbonContext().setTenantId(tenantId);
+        context.getThreadLocalCarbonContext().setTenantDomain(tenantDomain);
+        var tenant=tenantManager.getTenant(tenantId);
+        var realm = server.osgiService('org.wso2.carbon.user.core.service.RealmService').getTenantUserRealm(tenantId);
+        var properties=realm.getRealmConfiguration().getUserStoreProperties();
+        var sProp=properties.toString();
+        var propString ="OTTenant=true";
+        index=sProp.indexOf(propString);
+
+    }finally{
+        context.endTenantFlow();
+    }
+     return index>0;
+};
+
+var checkPermissionforStages=function(applicationKey,stages){
+		var result=true;
+		var modPermission = jagg.module("permission");
+		for(var stage in stages){
+			if(!modPermission.isUserAccessGranted(applicationKey, PERMISSION_RESOURCES_UPDATE_FOR_STAGE + stages[stage])){
+				result=false;
+				break;
+			}
+		}
+		return result;
+	};
+
+/**
+ * Get application type
+ *
+ * @param applicationKey {String} - application key
+ * @returns {*} - Application type. null for invalid applicationKey
+ */
+var getApplicationType = function(applicationKey) {
+    var tenantDomain= getTenantDomain();
+    var infoType = TENANT_INFO_APP_TYPE;
+    var applicationType = null;
+    var cachedResult= checkTenantInfoFromCache(tenantDomain , applicationKey , infoType);
+    if(cachedResult){  // cache hit
+        applicationType =  cachedResult;
+    } else {
+        applicationType = getApplicationTypeFromService(applicationKey); //call osgi service
+        cacheTenantInfo(tenantDomain , applicationKey , infoType , applicationType);
+    }
+    return applicationType;
+}
+
+var getApplicationTypeManager=function(){
+    var applicationTypeManagerClass = Packages.org.wso2.carbon.appfactory.core.apptype.ApplicationTypeManager;
+    var applicationTypeManagerInstance = applicationTypeManagerClass.getInstance();
+    return applicationTypeManagerInstance;
+}
+
+var getApplicationTypeBean=function(applicationType){
+    var applicationTypeManager = getApplicationTypeManager();
+    return applicationTypeManager.getApplicationTypeBean(applicationType);
+}
+
+/**
+ * Cache tenant related info
+ *
+ * @param tenantDomain {String} - tenant domain
+ * @param applicationKey {String} - application key
+ * @param infoType {String} - Information name/type to cache
+ * @param info {*} - Information to be cached
+ */
+var cacheTenantInfo = function (tenantDomain , applicationKey , infoType , info) {
+    var tenantInfoCache=session.get(TENANT_INFO_CACHE);
+    var tenantCache = {};
+    var appCache = {};
+    if(tenantInfoCache != null || tenantInfoCache != undefined){
+        tenantCache=tenantInfoCache[tenantDomain];
+        appCache=tenantCache[applicationKey];
+        if(appCache ==null || appCache == undefined){
+            appCache={};
+        }
+    }else{
+        tenantInfoCache={};
+    }
+    appCache[infoType]=info;
+    tenantCache[applicationKey]=appCache;
+    tenantInfoCache[tenantDomain]=tenantCache;
+    session.put(TENANT_INFO_CACHE,tenantInfoCache);
+}
+
+/**
+ * Check for tenant domain related info inside cache
+ *
+ * @param tenantDomain {String} - tenant domain
+ * @param applicationKey {String} - application key
+ * @param infoType {String} - Information name/type to cache
+ * @returns {*} - cached object. null if cache miss
+ */
+var checkTenantInfoFromCache=function(tenantDomain , applicationKey , infoType){
+    var tenantInfoCache=session.get(TENANT_INFO_CACHE);
+    if(tenantInfoCache){
+        var tenantCache=tenantInfoCache[tenantDomain];
+        if(tenantCache){
+            var appCache=tenantCache[applicationKey];
+            if(appCache){
+                return appCache[infoType];
+            }
+        }
+    }
+    return null;
+};
+
+/**
+ * Get application type from osgi service
+ *
+ * @param applicationKey {String} - application key
+ * @returns {*} - Application type. null for invalid applicationKey
+ */
+var getApplicationTypeFromService  =function (applicationKey) {
+
+    var applicationType = null;
+    var context=multitenancy.getPrivilegedCarbonContext();
+    var tenantDomain = getTenantDomain();
+    var tenantId=getTenantId();
+    try{
+        context.startTenantFlow();
+        context.getThreadLocalCarbonContext().setTenantId(tenantId);
+        context.getThreadLocalCarbonContext().setTenantDomain(tenantDomain);
+        applicationType = server.osgiService('org.wso2.carbon.appfactory.application.mgt.service.ApplicationInfoService').getApplicationType(applicationKey ,tenantDomain);
+
+    }finally{
+        context.endTenantFlow();
+    }
+    return applicationType;
+};
+
+
+%>

@@ -1,0 +1,74 @@
+<%
+ include('/jagg/constants.jag');
+include("/jagg/jagg.jag");
+jagg.block("reposBuilds/list", {
+    initialize:function (data) {
+
+    },
+    getInputs:function () {
+        return {
+            "applicationKey":null
+        }
+    },
+
+    getOutputs:function (inputs) {        
+    	var log = new Log();
+        var applicationKey = request.getParameter("applicationKey");
+    	var lifeCycleModule = jagg.module("lifecycle");
+        var mod = jagg.module("manager");
+    	
+    	var hasConfigureAPIManagerPermission = true;//jagg.module("permission").isUserAccessGranted(inputs.applicationKey, PERMISSION_CONFIGURATION_API_MANAGER);
+    	var hasRepoReadWritePermission =true;// jagg.module("permission").isUserAccessGranted(inputs.applicationKey, PERMISSION_REPOSITORY_READ_WRITE);
+    	
+    	var map = {};
+    	var stages = lifeCycleModule.getAllLifeCycleStages();
+    	
+    	for(var index in stages){
+    		var isAllowed = jagg.module("permission").isUserAccessGranted(inputs.applicationKey, PERMISSION_DEPLOY_TO+stages[index]);
+    		map[stages[index]] = isAllowed ;
+    	}
+    	
+       var hasBranchingPermission = jagg.module("permission").isUserAccessGranted(inputs.applicationKey,PERMISSION_REPOSITORY_BRANCH);
+
+       modApp = jagg.module("application");
+       var buildableStages;
+       var appDetails = [];
+       if(jagg.module("permission").isUserAccessGranted(applicationKey, PERMISSION_APPLICATION_MEMBER)){
+            //calling module app
+            var x = modApp.getAppVersionsInStages(applicationKey, jagg.getUser(), false, true, false);
+            if(x !=null){
+                var appInfo=parse(x);
+            }
+	    buildableStages=parse(modApp.getBuildableStages());
+            for(var appIndex in appInfo ){
+                var elementAppInfo=appInfo[appIndex];
+
+                var versions=elementAppInfo.versions;
+
+                for(var index in versions){
+                    var version={};
+                    var versionElement=versions[index];
+		            var tempAppDetail = {};
+
+                    version.current=versionElement.version;
+                    version.stage=versionElement.stage;
+                    tempAppDetail.type=appInfo[0].type;
+                    tempAppDetail.version=version;
+                    tempAppDetail.isBuildable=mod.getApplicationTypeBean(appInfo[0].type).isBuildable();
+
+                    appDetails.push(tempAppDetail);
+                }
+            }
+        }
+       var tenantDomain = mod.getTenantDomain();
+       return {
+    	    "tenantDomain":tenantDomain,
+            "hasBranchingPermission":hasBranchingPermission,
+	    	"appDetails":appDetails,
+	    	"buildableStages":buildableStages
+       };
+    }
+
+
+});
+%>

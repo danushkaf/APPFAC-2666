@@ -1,0 +1,26 @@
+<%
+include("/jagg/jagg.jag");
+include("/jagg/constants.jag");
+include("/jagg/config_reader.jag");
+(function () {
+    var mod, obj, result,
+    action = request.getParameter("action"),
+    site = require("/site/conf/site.json");
+    mod = jagg.module("events");
+    if(!jagg.getUser()){
+	    print(UNAUTHORIZED_ERROR_RESPONSE);
+        return;
+	}
+    if (action == "publish") {
+        print(mod.publish());
+    } else if (action == "userActivity") {
+    	var events = request.getParameter("events");
+    	var parseJSON = JSON.parse(events); //eval('('+events+')');
+    	var log = new Log();
+    	mod.publishUserActivity(parseJSON);
+    } else {
+        throw new Error("Invalid action specified");
+    }
+
+}());
+%>

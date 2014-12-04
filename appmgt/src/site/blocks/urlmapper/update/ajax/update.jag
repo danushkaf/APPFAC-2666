@@ -1,0 +1,103 @@
+<%
+include("/jagg/jagg.jag");
+include("/jagg/constants.jag");
+include("/jagg/config_reader.jag");
+
+var lifeCycleModule = jagg.module("lifecycle");
+var log=new Log();
+var mod = jagg.module("urlmapper");
+var permission = jagg.module("permission");
+
+(function () {
+	var action = request.getParameter("action"),
+	site = require("/site/conf/site.json");
+    if (!jagg.getUser()) {
+        print(UNAUTHORIZED_ERROR_RESPONSE);
+        return;
+    }
+    if(action == "mapNewCustomUrlToVersion"){
+        var newCustomUrl = request.getParameter("newCustomUrl");
+        newCustomUrl = newCustomUrl.toLowerCase();
+        var version = request.getParameter("version");
+        var applicationKey = request.getParameter("applicationKey");
+        var stage = getProperty(FINE_GRAINED_DOMAIN_MAPPING);
+        if ( permission.isUserAccessGranted(applicationKey, PERMISSION_DOMAIN_MAPPING)){
+            try {
+                mod.mapNewCustomUrlToVersion(stage,newCustomUrl,applicationKey,version,true);
+            } catch (e) {
+                var msg = "Error while updating domain mapping(custom url) to "+newCustomUrl+ " for application: "+ applicationKey +
+                        " version: "+version+" in stage: "+ stage;
+                log.error(msg);
+                log.error(e);
+                response.status = 400;
+                response.content = e;
+            }
+        } else {
+            response.sendError(401, "Unauthorized!!! Only Application Owner has permission to complete this action");
+        }
+    } else if(action == "updateExistingUnmappedCustomUrl"){
+        var newCustomUrl = request.getParameter("newCustomUrl");
+        newCustomUrl = newCustomUrl.toLowerCase();
+        var applicationKey = request.getParameter("applicationKey");
+
+        if (permission.isUserAccessGranted(applicationKey, PERMISSION_DOMAIN_MAPPING)){
+            var stage = getProperty(FINE_GRAINED_DOMAIN_MAPPING);
+
+            try {
+                mod.updateExistingUnmappedCustomUrl(stage,newCustomUrl,applicationKey);
+            } catch (e) {
+                var msg = "Error while updating unmapped custom url to: "+newCustomUrl+ " for application: "
+                        +applicationKey +" in stage: "+ stage;
+                log.error(msg);
+                log.error(e);
+                response.status = 400;
+                response.content = e;
+            }
+        } else {
+            response.sendError(401, "Unauthorized!!! Only Application Owner has permission to complete this action");
+        }
+    } else if(action == "remapDomainToVersion"){
+        var oldVersion = request.getParameter("oldVersion");
+        var newVersion = request.getParameter("newVersion");
+        var applicationKey = request.getParameter("applicationKey");
+        var stage = getProperty(FINE_GRAINED_DOMAIN_MAPPING);
+
+        if (permission.isUserAccessGranted(applicationKey, PERMISSION_DOMAIN_MAPPING)){
+            try {
+                mod.remapDomainToVersion(stage, applicationKey, newVersion,oldVersion);
+            } catch (e) {
+                var msg = "Error while remapping the production url(s) from version: "+oldVersion
+                        +" to version:"+newVersion+" for application: "+applicationKey +" in stage: "+ stage;
+                log.error(msg);
+                log.error(e);
+                response.status = 400;
+                response.content = e;
+            }
+        } else {
+            response.sendError(401, "Unauthorized!!! Only Application Owner has permission to complete this action");
+        }
+    } else if(action == "removeCustomUrl"){
+        var applicationKey = request.getParameter("applicationKey");
+        var stage = getProperty(FINE_GRAINED_DOMAIN_MAPPING);
+        if (permission.isUserAccessGranted(applicationKey, PERMISSION_DOMAIN_MAPPING)){
+            try {
+                mod.removeDomainMappingFromApplication(stage,applicationKey,null,true);
+            } catch (e) {
+                var msg = "Error while removing custom url for application: "+ applicationKey;
+                log.error(msg);
+                log.error(e);
+                response.status = 400;
+                response.content = e;
+            }
+        } else {
+            response.sendError(401, "Unauthorized!!! Only Application Owner has permission to complete this action");
+        }
+    } else {
+		throw new Error("No action specified");
+	}
+}());
+
+
+
+%>
+

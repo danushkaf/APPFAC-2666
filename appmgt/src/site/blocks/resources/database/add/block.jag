@@ -1,0 +1,20 @@
+<%
+include('/jagg/constants.jag');
+include("/jagg/util.jag");
+jagg.block("resources/database/add", {
+    initialize:function (data) {
+
+    },
+    getInputs: function () {
+        return {
+            "applicationKey": null
+        }
+    },
+    getOutputs: function (inputs) {
+           var hasAccessForAllstages=jagg.module("permission").hasPermissionForAllStages(inputs.applicationKey);
+           return {
+           	   "hasAccessForAllstages":hasAccessForAllstages
+           };
+        }
+  });
+%>

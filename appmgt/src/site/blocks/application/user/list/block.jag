@@ -1,0 +1,24 @@
+<%
+include('/jagg/constants.jag');
+jagg.block("application/user/list", {
+    initialize:function (data) {
+
+    },
+    getInputs:function () {
+        return {
+            "applicationKey":null
+        }
+    },
+
+    getOutputs:function (inputs) {
+        var hasInviteUserPermission = jagg.module("permission").hasApplevelUserMgtPermission(inputs.applicationKey);
+        var helpTips = jagg.module("help").getHelpTips("team");
+        return {
+            "hasInviteUserPermission":hasInviteUserPermission,
+	        "helpTips":helpTips
+        };
+    }
+
+
+});
+%>

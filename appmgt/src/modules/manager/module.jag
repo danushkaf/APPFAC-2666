@@ -1,0 +1,43 @@
+<%
+jagg.module("manager", {
+	setAuthHeaders:function () {
+		return jagg.require(jagg.getModulesDir() + "manager/manager.jag").setAuthHeaders.apply(this, arguments);
+	},
+	getBackendCookie:function () {
+		return jagg.require(jagg.getModulesDir() + "manager/manager.jag").getBackendCookie.apply(this, arguments);
+	},
+	getTenantDomain:function () {
+		return jagg.require(jagg.getModulesDir() + "manager/manager.jag").getTenantDomain.apply(this, arguments);
+	},
+	getTenantAwareUsername:function () {
+		return jagg.require(jagg.getModulesDir() + "manager/manager.jag").getTenantAwareUsername.apply(this, arguments);
+	},
+	getDomainlessUserName:function () {
+		return jagg.require(jagg.getModulesDir() + "manager/manager.jag").getDomainlessUserName.apply(this, arguments);
+	},
+	getTenantId:function () {
+		return jagg.require(jagg.getModulesDir() + "manager/manager.jag").getTenantId.apply(this, arguments);
+	},
+	getLastCommitId:function () {
+        	return jagg.require(jagg.getModulesDir() + "manager/manager.jag").getLastCommitId.apply(this, arguments);
+    },
+    getOTtenantProperty:function () {
+        	return jagg.require(jagg.getModulesDir() + "manager/manager.jag").getOTtenantProperty.apply(this, arguments);
+    },
+    checkPermissionforStages:function () {
+        	return jagg.require(jagg.getModulesDir() + "manager/manager.jag").checkPermissionforStages.apply(this, arguments);
+    },
+    getApplicationType:function () {
+        return jagg.require(jagg.getModulesDir() + "manager/manager.jag").getApplicationType.apply(this, arguments);
+    },
+    cacheTenantInfo:function () {
+        return jagg.require(jagg.getModulesDir() + "manager/manager.jag").cacheTenantInfo.apply(this, arguments);
+    },
+    getApplicationTypeManager:function () {
+        	return jagg.require(jagg.getModulesDir() + "manager/manager.jag").getApplicationTypeManager.apply(this, arguments);
+    },
+    getApplicationTypeBean:function () {
+        	return jagg.require(jagg.getModulesDir() + "manager/manager.jag").getApplicationTypeBean.apply(this, arguments);
+    }
+});
+%>

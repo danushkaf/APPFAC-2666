@@ -1,0 +1,54 @@
+<%
+include("/jagg/jagg.jag");
+include("/jagg/constants.jag");
+include("/jagg/config_reader.jag");
+
+var log = new Log('modules/resources/apis/get/get.jag');
+
+var carbon = require('carbon');
+var server = carbon.server;
+var multitenancy = carbon.multitenancy;
+var modManager = jagg.module("manager");
+var permissionModule = jagg.module("permission");
+
+var getAPIsOfUserApp = function(appKey, appowner){
+	var apis;
+	var tenantDomain=modManager.getTenantDomain() ;
+	var context=multitenancy.getPrivilegedCarbonContext();
+	var tenantManager= multitenancy.getTenantManager();
+	try{
+		context.startTenantFlow();
+		context.getThreadLocalCarbonContext().setTenantId(tenantManager.getTenantId(tenantDomain));
+		context.getThreadLocalCarbonContext().setTenantDomain(tenantDomain);
+		var service = server.osgiService('org.wso2.carbon.appfactory.apiManager.integration.APIManagerIntegrationService') ;
+		apis = service.getAPIsOfUserApp(appKey, appowner, session.get("SAML_TOKEN"));
+			
+		if(log.isDebugEnabled()){
+			log.debug("Invoking service "+service+" returned result:"+apis);
+		}
+
+		var apisArray = [];
+		for(var i = 0; i < apis.length; i++){
+			var api = apis[i];
+			var apiInfo = {};
+			var apiName = api.apiName;
+			var apiVersion = api.apiVersion;
+			var apiProvider = api.apiProvider;
+			var description = api.description;
+
+			apiInfo.name = apiName;
+			apiInfo.version = apiVersion;
+			apiInfo.provider = apiProvider;
+			apiInfo.description = description;
+			apisArray.push(apiInfo);
+		}
+		return apisArray;	
+	}catch(e){
+		log.error("Error while getting the list of APIs of appKey "+ applicationKey + "\n"+ e.message);
+		throw "Error while getting the list of APIs of appKey "+ applicationKey;
+	}finally {
+		context.endTenantFlow();
+	}
+}
+
+%>

@@ -1,0 +1,54 @@
+<%
+include("/jagg/jagg.jag");
+include("/jagg/constants.jag");
+include("/jagg/config_reader.jag");
+var log = new Log();
+(function () {
+    var mod, obj, result,
+            action = request.getParameter("action"),
+            site = require("/site/conf/site.json");
+    if (!jagg.getUser()) {
+        print(UNAUTHORIZED_ERROR_RESPONSE);
+        return;
+    }
+    if (action == "listen") {
+        mod = jagg.module("events");
+        var appMod = jagg.module("application");
+
+        var pageName = request.getParameter("pageName");
+        var userName = request.getParameter("userName");
+        var appId = request.getParameter("appId");
+        var response = {};
+
+        // for user home
+        if (pageName == PAGES.USER_HOME) {
+            var application_list = session.get("application_list");
+            if(application_list == null) {
+                application_list = mod.getAllAppsOfUser(userName);
+                session.put('application_list', application_list);
+            }
+            var userApps = parse(application_list);
+            for (var i = 0; i < userApps.length; i++) {
+                var appKey = userApps[i].key;
+                // user home
+                var list = mod.listen(userName);
+                //var list = mod.listen(userName).concat(mod.listen(appKey + ".fork.users." + userName));
+		        response.retrievedTime = new Date().getTime();
+		        response.list = list; 
+            }
+            print(response);
+        } else {
+            // app home
+		    var list = mod.listen(appId).concat(mod.listen(appId + ".fork.users." + userName)).sort();
+		    response.retrievedTime = new Date().getTime();
+            response.list = list;	
+            print(response);
+        }
+
+
+    }else {
+        throw new Error("Invalid action specified");
+    }
+
+}());
+%>

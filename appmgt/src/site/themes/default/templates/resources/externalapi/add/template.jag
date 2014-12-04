@@ -1,0 +1,399 @@
+<% jagg.template("resources/externalapi/add", function(inputs, outputs, jagg) { %>
+<%
+include("/jagg/constants.jag");
+var applicationKey = request.getParameter("applicationKey");
+var applicationName = request.getParameter("applicationName");
+var resourceName = request.getParameter("resourceName");
+var isEdit = request.getParameter("isEdit");
+env=request.getParameter("environment");
+AllowedAllStages=outputs.hasAccessForAllstages;
+var hasUpdateResourcePermissions = outputs.hasUpdateResourcePermissions;
+var hasDeleteResourcePermissions = outputs.hasDeleteResourcePermissions;
+
+var pagePath = request.getParameter("pagePath");
+var redirectURL = "configureenvironment.jag?applicationName="+ applicationName +"&applicationKey="+ applicationKey;
+if(pagePath != null && pagePath.equals("apimanager")){
+    redirectURL = "apimanager.jag?applicationName=" + applicationName + "&applicationKey=" + applicationKey;
+}
+
+var headerMsg = "Add New External API";
+var buttonValue = "Add API";
+
+var mod = jagg.module("resources");
+var modPermission = jagg.module("permission");
+
+if(isEdit != null && isEdit == "true"){
+	var log = new Log();
+    headerMsg = resourceName;
+    buttonValue = "Save";   
+}
+
+var disabledText = "";
+if(!hasUpdateResourcePermissions && isEdit == "true"){
+	disabledText = "disabled=disabled"
+}
+
+var helpTips = outputs.helpTips;
+%>
+
+<script type="text/javascript">
+//[cdata[
+
+var editApiData = [];
+
+function createAuthUI(value, emptyOnly){
+	
+	$('#api_authdiv').empty();
+	if(!emptyOnly){
+		var theLine = '';
+		if (value == 'token') {
+			theLine = '<div class="input_row"><label for="token"><strong>Token</strong> <em>*</em></label>';
+	        theLine += '<input id="api_token" type="text" name="token" class="half" required <%=disabledText%>/></div>';
+		} else if (value == 'oauth') {
+			theLine = '<div class="input_row"><label for="consumer_key" ><strong>Consumer Key</strong> <em>*</em></label>';
+	        theLine += '<input id="api_consumer_key" type="text" name="consumer_key" class="half" required <%=disabledText%>/></div>';
+	        theLine += '<div class="input_row"><label for="consumer_secret" ><strong>Consumer Secret</strong> <em>*</em></label>';
+	        theLine += '<input id="api_consumer_secret" type="text" name="consumer_secret" class="half" required <%=disabledText%>/></div>';
+		} else if (value == 'basic') {
+			theLine = '<div class="input_row"><label for="username" ><strong>User name</strong> <em>*</em></label>';
+	        theLine += '<input id="api_username" type="text" name="username" class="half" required <%=disabledText%>/></div>';
+	        theLine += '<div class="input_row"><label for="password" ><strong>Password</strong> <em>*</em></label>';
+	        theLine += '<input id="api_password" type="password" name="password" class="half" required <%=disabledText%>/></div>';
+	    } 
+		theLine += '<div class="input_row"><label for="api_url" ><strong>API URL</strong> <em>*</em></label>';
+        theLine += '<input id="api_url" type="url" name="api_url" class="half" required <%=disabledText%>/>';
+	    $('#api_authdiv').append(theLine);
+	}
+}
+
+
+function drawStagesForCreatePermittedEnvironments(){
+    jagg.post("../blocks/resources/common/get/ajax/get.jag", {
+	    action: "getCreatePermittedEnvironments",
+	    applicationKey: '<%=applicationKey%>'
+    },
+    function (result) {
+	  var parsedArray = jQuery.parseJSON(result);
+      for(var i = 0; i < parsedArray.length; i++) {
+          var stage = parsedArray[i];
+          var row='<option>'+stage+'</option>';
+          $("#api_stage").append(row);
+          $("#api_stage").select2({
+              formatResult: selectBoxOptionFormat,
+              minimumResultsForSearch: -1,
+              containerCssClass : "error" });
+      }
+    },
+    function (jqXHR, textStatus, errorThrown) {
+ 	   
+    });
+}
+
+function drawStagesForUpdatePermittedEnvironments(){
+    jagg.post("../blocks/resources/externalapi/get/ajax/list.jag", {
+	    action: "getUpdatePermittedData",
+	    applicationKey: '<%=applicationKey%>',
+	    resourceName: '<%=resourceName%>',
+	    stage:'<%=env%>'
+    },
+    function (result) {
+    	editApiData = JSON.parse(result); 
+		var tmpStage=editApiData['<%=env%>'];
+	  
+     	// Set the environments dropdown with stages belongs to current edit
+     	//We only edit a property of a certain stage. Hence only appending one value
+        $("#api_stage").empty().append('<option selected="selected"><%=env%></option>');
+        $("#api_stage").val('<%=env%>');
+
+        $("#api_stage").select2({
+              formatResult: selectBoxOptionFormat,
+              minimumResultsForSearch: -1,
+              containerCssClass : "error" });
+
+    	// Fill the edit UI with first element data
+    	var api = tmpStage;
+    	createAuthUI(api['api_auth'], false);
+    	for(var attribute in api) {
+			var id = '#'+attribute;
+			 $(id).val(api[attribute]);
+		}
+
+    },
+    function (jqXHR, textStatus, errorThrown) {
+
+    });
+}
+
+function updateAuthUI(selectedStage){
+	for(var i=0; i< editApiData.length; i++){
+		var api = editApiData[i];
+		if(api['api_stage'] == selectedStage){
+			createAuthUI(api['api_auth'], false);
+			for(var attribute in api) {
+				var id = '#'+attribute;
+				 $(id).val(api[attribute]);
+			}
+			break;
+		}
+	}
+}
+
+$(document).ready(function() {
+	 setHelpTips(<%= helpTips %>);
+	 if('<%=isEdit%>' == 'null'){
+		 drawStagesForCreatePermittedEnvironments();
+			createAuthUI($("#api_auth option:selected").val(), false);
+	 }else{
+		 drawStagesForUpdatePermittedEnvironments();
+	 }
+
+	$('#api_auth').change(function() {
+		createAuthUI($(this).val(), false);
+	});
+
+	$('#api_stage').change(function() {
+		updateAuthUI($(this).val());
+	});
+
+	var createPropForm 	= $("#createExternalApi");
+	$(createPropForm).ajaxForm({
+		beforeSubmit: function() { //before sending form
+			if('<%=isEdit%>' != null && '<%=isEdit%>' == "true"){
+				updateResource();
+			}else{
+				validatePropertyNameAndCreate();
+			}
+
+
+		}
+    });
+
+	 $('#deleteResBtn').click(function(){
+         jagg.popMessage({type:'confirm',title:'Delete Value',content:'Are you sure you want to delete value <%=resourceName%>?',okCallback:function(){deleteResource()}});
+ });
+    $('#copyToAll').change(function() {
+        if($(this).is(":checked")) {
+            $('#api_stage').parent().slideUp('fast');
+        }else{
+           $('#api_stage').parent().slideDown('fast');
+        }
+    });
+
+});
+
+
+function updateResource() {
+    $('#create_button').attr('disabled','disabled');
+	var inputString = getInputsAsString();
+    jagg.post("../blocks/resources/externalapi/add/ajax/add.jag", {
+	    action: "updateExternalApi",
+	    applicationKey: '<%=applicationKey%>',
+	    apiName: $("#api_name").attr('value'),
+	    authType:$("#api_auth").attr('value'),
+	    givenValues: inputString
+    },
+    function (result) {
+        $('#create_button').removeAttr('disabled');
+	window.location.replace("<%=redirectURL%>");
+        //successfully added
+    },
+    function (jqXHR, textStatus, errorThrown) {
+ 	    // alert(jqXHR);
+        $('#create_button').removeAttr('disabled');
+    });
+}
+
+
+function createResource(copyToAll) {
+	var inputString = getInputsAsString();
+    jagg.post("../blocks/resources/externalapi/add/ajax/add.jag", {
+	    action: "createExternalApi",
+	    applicationKey: '<%=applicationKey%>',
+	    apiName: $("#api_name").attr('value'),
+	    authType:$("#api_auth").attr('value'),
+	    givenValues: inputString,
+	    copyToAll:copyToAll
+    },
+    function (result) {
+        $('#create_button').removeAttr('disabled');
+	window.location.replace("<%=redirectURL%>");
+    },
+    function (jqXHR, textStatus, errorThrown) {
+        $('#create_button').removeAttr('disabled');
+    });
+}
+
+
+function deleteResource() {
+	var inputString = getInputsAsString();
+    jagg.post("../blocks/resources/externalapi/add/ajax/add.jag", {
+	    action: "deleteExternalApi",
+	    applicationKey: '<%=applicationKey%>',
+	    resourceName: $("#api_name").attr('value'),
+	    stage: '<%=env%>'
+    },
+    function (result) {
+        window.location.replace("<%=redirectURL%>");
+    },
+    function (jqXHR, textStatus, errorThrown) {
+    	jagg.message({type:'error', id:'validation', content: "Error occurred while deleting the External API."});
+    });
+}
+
+function getInputsAsString() {
+	var authStr = '';
+	var authvalue = $('#api_auth').val();
+	var url_temp = $('#api_url').val().trim();
+    var url = encodeURIComponent(url_temp);
+	if (authvalue == 'token') {
+		authStr = 'auth:token:' + $('#api_token').val().trim();
+	} else if (authvalue == 'oauth') {
+		authStr = 'auth:oauth:' + $('#api_consumer_key').val().trim() + ':' + $('#api_consumer_secret').val().trim();
+	} else if (authvalue == 'basic') {
+		authStr = 'auth:basic:' + $('#api_username').val().trim() + ':' +  $('#api_password').val().trim();
+    } else {
+    	authStr = 'auth:none';
+    }
+     if('<%=env%>'!='null'){
+        return '::stage:<%=env%>:' + url + ':' + authStr;
+
+        }else{
+            return '::stage:'+$("#api_stage option:selected").val()+':' + url + ':' + authStr;
+
+        }
+
+
+}
+
+function setHelpTips(helpTips){
+                 $("#authenticationHelp").html(helpTips.authenticationHelp);
+}
+
+function validatePropertyNameAndCreate() {
+    $('#create_button').attr('disabled','disabled');
+    var inputString = getInputsAsString();
+    jagg.syncPost("../blocks/resources/registry/get/ajax/get.jag", {
+            action: "propertyExistInStages",
+            applicationKey: '<%=applicationKey%>',
+            propertyName: $("#api_name").attr('value'),
+	    givenValues: inputString,
+	    copyToAll:$('#copyToAll').is(':checked')
+    },
+    function (result) {
+	if(result){
+	$('#create_button').removeAttr('disabled');
+	jagg.message({type:'error', id:'validation', content: "A resource with the same name exists. Please use a different name"});
+	}else{
+	createResource($('#copyToAll').is(':checked'));
+	}
+    },"json");
+}
+
+</script>
+
+
+<div class="container">
+	<article class="main">
+        <header class="breakDownFix"><div><% jagg.includeBlock("page/messages", null); %>
+	 <% jagg.includeBlock("page/eventing", {"applicationKey":null,"pageName":PAGES.RESOURCES}); %>
+         <% jagg.includeBlock("page/notification-wall", {"wall_name":applicationKey+" - App Wall","applicationKey":applicationKey,"pageName":"App Home"}); %></div>
+        	<div class="content">
+                <h1>Runtime Configs</h1>
+             </div>
+        </header>
+        <% jagg.includeBlock("resources/menu", {page:'apis',applicationName:applicationName,applicationKey:applicationKey}); %>
+
+       <section class="separator">
+            <div class="page_nav">
+                <div class="content clear">
+                    <ol class="breadcrumb left">
+                        <li class="breadcrumb_item"><a href="javascript:location.href='<%=jagg.getAbsoluteUrl("/site/pages/apimanager.jag")%>?applicationName=<%=applicationName%>&applicationKey=<%=applicationKey%>'" class="breadcrumb_link">APIs</a></li>
+                       <% if(isEdit==="true" && hasDeleteResourcePermissions){	%>
+                        <li class="breadcrumb_item"><h2><%=headerMsg%></h2></li>
+
+                          </ol>
+                    <div class="right btn_group" id="delete_button_div">
+                        <ul class="inline_box inline_list btn_group_list">
+
+                            <li class="inline_item"><a href="#" class="btn main" id="deleteResBtn">Delete External API</a>
+                            </li>
+                        </ul>
+                        <div class="clearfix"></div>
+                    </div>
+                        <%}else{%>
+                        <li class="breadcrumb_item"><h2><%=headerMsg%></h2></li>
+                         </ol>
+                        <%}%>
+                          <!-- li class="breadcrumb_item"><h3><%=env%></h3></li> -->
+                </div>
+            </div>
+            <div class="content clear well">
+            	<div class="form-container">
+
+                    <form action="#" id="createExternalApi" method="post" class="hold right_label">
+                        <fieldset>
+
+                        <% if(isEdit == "true"){ %>
+                        <input id="api_name" name="api_name" class="half" type="hidden"/>
+                		    <div class="input_row">
+		                        <label><strong>Environment</strong> <em>*</em></label>
+		                        <select class="select_list half big" id="api_stage" disabled="disabled"></select>
+                            </div>
+                        	<div class="input_row">
+                        	    <label><strong>Authentication</strong> <em>*</em></label>
+                        		<input id="api_auth" type="text" name="api_auth" class="half" disabled="disabled"/>
+                		    </div>
+                    	<% }else{ %>
+                            <div class="input_row">
+                                <label for="api_name" ><strong>API Name</strong> <em>*</em></label>
+                                <input id="api_name" type="text" name="api_name" class="half" required/>
+                            </div>
+                            <div class="input_row">
+		                        <label><strong>Environment</strong> <em>*</em></label>
+		                        <select class="select_list half big" id="api_stage" name="api_stage" onchange="updateUIForStage()"></select> 
+                            </div>
+                            <%if((!isEdit)&&(AllowedAllStages)){%>
+                                <div class="input_row">
+								<legend id="copyall"><input type="checkbox" id="copyToAll"> Create API in all environments</legend>
+								</div>
+                               <%}%>
+
+                            <div class="input_row">
+                                <label><strong>Authentication</strong> <em>*</em></label>
+                                <select class="select_list half big" id="api_auth" >
+                                    <option value="none">None</option>
+								    <option value="oauth">OAuth</option>
+							        <option value="token">Access Token</option>
+									<option value="basic">Basic Auth</option>
+								</select>
+								<div class="help-block" style="padding-left: 215px"><span class="help-icon">?</span> <span id="authenticationHelp"></span></div>
+                            </div>
+                        <% } %>
+                            <div id="api_authdiv"/>
+                    </fieldset>
+                      <div>
+                    	 
+                        <div class="buttonrow">
+                            <% if(isEdit == "true"){ 
+                            	if(hasUpdateResourcePermissions){
+                            %>
+                            	<input type="submit" value="<%=buttonValue%>" class="btn main" id="create_button"/>
+                            <%
+                            		}
+                            	}else{
+                            %>	
+                            	<input type="submit" value="<%=buttonValue%>" class="btn main" id="create_button"/>
+                            <% } %>	
+                            <a href="javascript:location.href='<%=jagg.getAbsoluteUrl("/site/pages/apimanager.jag")%>?applicationName=<%=applicationName%>&applicationKey=<%=applicationKey%>'">Cancel</a>
+                        </div>
+
+                     </form>
+
+				</div>
+            </div>
+        </section>
+        <div class="clearfix"></div>
+     </article>
+</div>
+
+<% }); %>
