@@ -301,6 +301,7 @@ public class JenkinsArtifactDeployer extends AbstractStratosDeployer {
 				getFirstProperty("PAASArtifactStorageRepositoryProvider.BaseURL");
 	}
 
+
 	@Override
 	protected String getBaseRepoUrlPattern(String stage, String appType) throws AppFactoryException {
 		return Utils.getRepositoryProviderProperty(stage, "URLPattern", appType);

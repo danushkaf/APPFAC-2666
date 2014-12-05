@@ -26,6 +26,7 @@ import javax.naming.NamingException;
 import org.apache.commons.lang.StringUtils;
 import org.wso2.carbon.appfactory.common.AppFactoryException;
 import org.wso2.carbon.appfactory.common.util.AppFactoryUtil;
+import org.wso2.carbon.appfactory.core.runtime
 
 public class DeployerUtil {
 	
@@ -116,8 +117,6 @@ public class DeployerUtil {
 	}
     
     public static String getDeployerClassName(String stage, String appType) throws AppFactoryException{
-		String className = getAppFactoryConfigurationProperty("ApplicationDeployment.DeploymentStage." + stage + 
-				".Deployer.ApplicationType." + appType + ".ClassName");
 		
 		if (StringUtils.isBlank(className)){
 		    className = getAppFactoryConfigurationProperty("ApplicationDeployment.DeploymentStage." + stage + 

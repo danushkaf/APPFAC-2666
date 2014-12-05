@@ -18,6 +18,7 @@ package org.wso2.carbon.appfactory.core.apptype;
 
 import org.apache.axiom.om.OMElement;
 
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -41,7 +42,7 @@ public class ApplicationTypeBean {
     private boolean isAllowDomainMapping;
     private int displayOrder;
 	private OMElement jenkinsJobConfig;
-	private String runtimes;
+	private String[] runtimes;
 	public ApplicationTypeBean(){
 	}
 
@@ -180,11 +181,11 @@ public class ApplicationTypeBean {
 		return jenkinsJobConfig;
 	}
 
-	public String getRuntimes() {
+	public String[] getRuntimes() {
 		return runtimes;
 	}
 
-	public void setRuntimes(String runtimes) {
+	public void setRuntimes(String[] runtimes) {
 		this.runtimes = runtimes;
 	}
 }

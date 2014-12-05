@@ -20,11 +20,15 @@ package org.wso2.carbon.appfactory.deployers;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.appfactory.common.AppFactoryConfiguration;
+import org.wso2.carbon.appfactory.common.AppFactoryConstants;
 import org.wso2.carbon.appfactory.common.AppFactoryException;
 import org.wso2.carbon.appfactory.common.util.AppFactoryUtil;
+import org.wso2.carbon.appfactory.core.Deployer;
+import org.wso2.carbon.appfactory.deployers.util.DeployerUtil;
 import org.wso2.carbon.appfactory.s4.integration.DeployerInfo;
 import org.wso2.carbon.appfactory.s4.integration.RepositoryProvider;
 import org.wso2.carbon.appfactory.s4.integration.StratosRestService;
+import java.util.Map;
 
 
 import java.io.File;
@@ -56,46 +60,83 @@ public class StratosDeployer {
      * @throws AppFactoryException
      */
 
-    public String createSubscription(DeployerInfo deployerInfo, String stage,
+    public String createSubscription(Map deployerInfo, String stage,
                                      String appType,String username, int tenantID, String applicationID,
                                      String tenantDomain) throws AppFactoryException {
 
         AppFactoryConfiguration configuration = AppFactoryUtil.getAppfactoryConfiguration();
         //get the stratos server url for each stage
-        String serverURL = configuration.getFirstProperty(ENVIRONMENT + "." + stage + "." + "TenantMgtUrl");
+        String serverURL = configuration.getFirstProperty(
+                ENVIRONMENT + AppFactoryConstants.DOT + stage + AppFactoryConstants.DOT + "TenantMgtUrl");
 
         StratosRestService restService = new StratosRestService(serverURL,username, "");
-        deployerInfo.setAlias(applicationID + tenantDomain.replace(".", "dot"));
-        String repoUrl = "";
+        //deployerInfo.setAlias(applicationID + tenantDomain.replace(".", "dot"));
+        deployerInfo.put(AppFactoryConstants.RUNTIME_ALIAS_PREFIX, applicationID + tenantDomain
+                .replace(AppFactoryConstants.DOT, AppFactoryConstants.DOT_WORD));
+        String repoUrl = AppFactoryConstants.EMPTY_STRING;
+
+        String className = AppFactoryUtil.getAppfactoryConfiguration().getFirstProperty(
+                AppFactoryConstants.PASS_ARTIFACT_STORAGE_REPOSITORY_PROVIDER_PROVIDER_CLASS);
+
+
+        String adminUserName = AppFactoryUtil.getAppfactoryConfiguration().
+                getFirstProperty(
+                        AppFactoryConstants.PASS_ARTIFACT_STORAGE_REPOSITORY_PROVIDER_ADMIN_USERNAME);
+        String adminPassword = AppFactoryUtil.getAppfactoryConfiguration().
+                getFirstProperty(
+                        AppFactoryConstants.PASS_ARTIFACT_STORAGE_REPOSITORY_PROVIDER_ADMIN_PASSWORD);
+
+        String baseURL = AppFactoryUtil.getAppfactoryConfiguration().
+                getFirstProperty(
+                        AppFactoryConstants.PASS_ARTIFACT_STORAGE_REPOSITORY_PROVIDER_BASE_URL);
 
         try {
             if (!restService.isAlreadySubscribed(applicationID
-                    + tenantDomain.replace(".", "dot"))) {
-                RepositoryProvider repoProvider = (RepositoryProvider) deployerInfo
+                                                 + tenantDomain
+                    .replace(AppFactoryConstants.DOT, AppFactoryConstants.DOT_WORD))) {
+
+                DeployerInfo deployerInfoProvider=DeployerInfo.class.newInstance();
+                RepositoryProvider repoProvider = (RepositoryProvider) deployerInfoProvider
                         .getRepoProvider().newInstance();
-                repoProvider.setBaseUrl(deployerInfo.getBaseURL());
-                repoProvider.setAdminUsername(deployerInfo.getAdminUserName());
-                repoProvider.setAdminPassword(deployerInfo.getAdminPassword());
-                repoProvider.setRepoName(generateRepoUrlFromTemplate(
-                        deployerInfo.getRepoPattern(), deployerInfo.getAlias(),
+                repoProvider.setBaseUrl(baseURL);
+                repoProvider.setAdminUsername(adminUserName);
+                repoProvider.setAdminPassword(adminPassword);
+
+                String repoURLforDeployer= DeployerUtil.getParameterValue(deployerInfo,
+                                                               AppFactoryConstants.RUNTIME_REPO_URL);
+                String aliasPrefix=DeployerUtil.getParameterValue(deployerInfo,
+                                                                  AppFactoryConstants.RUNTIME_ALIAS_PREFIX);
+
+                repoProvider.setRepoName(generateRepoUrlFromTemplate(repoURLforDeployer,aliasPrefix,
                         tenantID, stage, applicationID));
                 repoUrl = repoProvider.createRepository();
-                deployerInfo.setRepoURL(repoUrl);
+                deployerInfo.put(AppFactoryConstants.RUNTIME_REPO_PROVIDER_URL, repoUrl);
 
                 log.info("***************************repo url 1:" + repoUrl
-                        + "******************");
-
-                restService.subscribe(deployerInfo.getCartridgeType(),
-                        deployerInfo.getAlias(), deployerInfo.getRepoURL(),
-                        true, deployerInfo.getAdminUserName(),
-                        deployerInfo.getAdminPassword(),
-                        deployerInfo.getDataCartridgeType(),
-                        deployerInfo.getDataCartridgeAlias(),
-                        deployerInfo.getAutoscalePolicy(),
-                        deployerInfo.getDeploymentPolicy());
+                         + "******************");
+                String cartridgeTypePrefix=DeployerUtil.getParameterValue(deployerInfo,
+                                                                          AppFactoryConstants.RUNTIME_CARTRIDGE_TYPE_PREFIX);
+                String RepoProviderURL=DeployerUtil.getParameterValue(deployerInfo,AppFactoryConstants.RUNTIME_REPO_PROVIDER_URL);
+                String DataCartridgeType=DeployerUtil.getParameterValue(deployerInfo,
+                                                                               AppFactoryConstants.RUNTIME_DATA_CARTRIDGE_TYPE);
+                String DataCartridgeAlias=DeployerUtil.getParameterValue(deployerInfo,
+                                                                                AppFactoryConstants.RUNTIME_DATA_CARTRIDGE_ALIAS);
+                String AutoscalePolicy=DeployerUtil.getParameterValue(deployerInfo,
+                                                                             AppFactoryConstants.RUNTIME_DATA_CARTRIDGE_ALIAS);
+                String deploymentPolicy=DeployerUtil.getParameterValue(deployerInfo,
+                                                                       AppFactoryConstants.RUNTIME_DEPLOYMENT_POLICY);
+                restService.subscribe(
+                        cartridgeTypePrefix,
+                        aliasPrefix,
+                        RepoProviderURL,
+                        true, adminUserName,adminPassword,
+                        DataCartridgeType,
+                        DataCartridgeAlias,
+                        AutoscalePolicy,
+                        deploymentPolicy);
             }
 
-        } catch (Exception e) {
+        }catch (Exception e) {
             String msg = "Unable to create repository";
             throw new AppFactoryException(msg, e);
         }

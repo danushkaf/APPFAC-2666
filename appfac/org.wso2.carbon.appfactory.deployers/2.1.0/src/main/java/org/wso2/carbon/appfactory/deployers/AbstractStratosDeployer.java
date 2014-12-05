@@ -124,9 +124,10 @@ public abstract class AbstractStratosDeployer extends AbstractDeployer {
             if (log.isDebugEnabled()) {
                 log.debug("SubscribeOnDeployment is true");
             }
-            String url = subscriptionHandler.createSubscription(deployerInfo,
-                    stageName, appTypeName, username,tenantId, applicationId,
-                    getTenantDomain());
+            String url = subscriptionHandler.createSubscription(metadata,
+                                                                stageName, appTypeName, username,
+                                                                tenantId, applicationId,
+                                                                getTenantDomain());
 
         } else {
             if (log.isDebugEnabled()) {
@@ -322,7 +323,13 @@ public abstract class AbstractStratosDeployer extends AbstractDeployer {
         String stage = DeployerUtil.getParameterValue(metadata,
                 AppFactoryConstants.DEPLOY_STAGE);
         String baseUrl = getBaseRepoUrl(stage, appType);
-        String template = getBaseRepoUrlPattern(stage, appType);
+        String template = getBaseRepoUrlPattern(stage,
+                                                appType); // Have to change, The problem is from the
+                                                // meta data bag we won't get the repo url pattern
+                                                // for a particular apptype as when we pushing that
+                                                // we just pushing it as a repoURLPattern without
+                                                // linking to app type.Hence we may have to put that
+                                                // by linking to each apptype in RestBasedJenkinsCIConnector.java
         String gitRepoUrl = "";
         if (subscribeOnDeployment) {
             gitRepoUrl = baseUrl + "git/" + template + File.separator

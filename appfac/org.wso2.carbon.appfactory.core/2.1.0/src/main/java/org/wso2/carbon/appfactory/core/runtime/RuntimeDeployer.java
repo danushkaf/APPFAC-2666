@@ -63,32 +63,37 @@ public class RuntimeDeployer extends AbstractDeployer {
 
 		File runtimeFile = runtimeFileData.getFile();
 		boolean isDirectory = runtimeFile.isDirectory();
-		if (!FilenameUtils.getExtension(runtimeFile.getName()).equals(APPTYPE_EXTENSION)){
+		if (!FilenameUtils.getExtension(runtimeFile.getName()).equals(APPTYPE_EXTENSION)) {
 			return;
 		} else if (isDirectory) {  // Ignore folders
 			return;
 		}
 
-		if(log.isDebugEnabled()){
+		if (log.isDebugEnabled()) {
 			log.debug("Deploying the new runtime from : " + runtimeFile.getName());
 		}
 
 		String archivePath = runtimeFile.getAbsolutePath();
-		String destinationFolderPath = runtimeFile.getParent() + File.separator + runtimeFile.getName().substring(
-				AppFactoryConstants.ZERO, runtimeFile.getName().lastIndexOf(AppFactoryConstants.DOT));
+		String destinationFolderPath =
+				runtimeFile.getParent() + File.separator + runtimeFile.getName().substring(
+						AppFactoryConstants.ZERO,
+						runtimeFile.getName().lastIndexOf(AppFactoryConstants.DOT));
 		try {
 			UnzipUtility.unzip(archivePath, destinationFolderPath);
-			File appRuntimeConfiguration = new File(destinationFolderPath + File.separator + RUNTIME_CONFIGURATION_NAME);
+			File appRuntimeConfiguration =
+					new File(destinationFolderPath + File.separator + RUNTIME_CONFIGURATION_NAME);
 			RuntimeManager.getInstance().addAppRuntime(appRuntimeConfiguration);
 		} catch (IOException e) {
 			log.error("Error while reading the runtime : " + runtimeFile.getName(), e);
-			throw new RuntimeException("Error while reading the runtime : " + runtimeFile.getName(), e);
-		}catch (AppFactoryException e) {
+			throw new RuntimeException("Error while reading the runtime : " + runtimeFile.getName(),
+			                           e);
+		} catch (AppFactoryException e) {
 			log.error("Error while deploying the runtime : " + runtimeFile.getName(), e);
-			throw new RuntimeException("Error while deploying the runtime : " + runtimeFile.getName(), e);
+			throw new RuntimeException(
+					"Error while deploying the runtime : " + runtimeFile.getName(), e);
 		}
 
-		if(log.isDebugEnabled()){
+		if (log.isDebugEnabled()) {
 			log.debug("Deployed the new runtime from : " + runtimeFile.getName());
 		}
 	}

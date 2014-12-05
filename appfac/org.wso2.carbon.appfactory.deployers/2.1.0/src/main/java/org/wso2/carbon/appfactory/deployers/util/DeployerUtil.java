@@ -16,6 +16,10 @@
 
 package org.wso2.carbon.appfactory.deployers.util;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import java.io.File;
 import java.util.Map;
 
 public class DeployerUtil {
@@ -48,6 +52,22 @@ public class DeployerUtil {
         }
 
         return null;
+    }
+
+    public static String generateTenantJenkinsUrl(String jobName, String tenantDomain, String jenkinsUrl) {
+        //      return jenkinsUrl + File.separator + Constants.TENANT_SPACE + File.separator + tenantDomain +
+        //              Constants.JENKINS_WEBAPPS + "/job/" + jobName + "/buildWithParameters";
+        return jenkinsUrl + File.separator + "t" + File.separator + tenantDomain +
+               "/webapps/jenkins" + "/job/" + jobName + "/buildWithParameters";
+    }
+
+    public static String getJenkinsHome() throws NamingException {
+        InitialContext ic = new InitialContext();
+
+        // thats everything from the context.xml and from the global configuration
+        Context xmlContext = (Context) ic.lookup("java:comp/env");
+
+        return (String) xmlContext.lookup("JENKINS_HOME");
     }
 
 }

@@ -31,12 +31,12 @@ public class RuntimeBean {
 	private String cartridgeTypePrefix;
 	private String deploymentPolicy;
 	private String autoscalePolicy;
-    private String repoURL;
-    private String dataCartridgeType;
+	private String repoURL;
+	private String dataCartridgeType;
 	private String dataCartridgeAlias;
 	private String subscribeOnDeployment;
 
-	public RuntimeBean(){
+	public RuntimeBean() {
 	}
 
 	public String getRuntimeName() {

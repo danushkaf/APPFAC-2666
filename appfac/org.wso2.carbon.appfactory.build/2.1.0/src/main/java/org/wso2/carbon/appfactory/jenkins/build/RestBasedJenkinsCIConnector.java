@@ -38,6 +38,8 @@ import org.wso2.carbon.appfactory.core.apptype.ApplicationTypeManager;
 import org.wso2.carbon.appfactory.core.build.DefaultBuildDriverListener;
 import org.wso2.carbon.appfactory.core.dto.Statistic;
 import org.wso2.carbon.appfactory.core.internal.ServiceHolder;
+import org.wso2.carbon.appfactory.core.runtime.RuntimeBean;
+import org.wso2.carbon.appfactory.core.runtime.RuntimeManager;
 import org.wso2.carbon.appfactory.core.util.AppFactoryCoreUtil;
 import org.wso2.carbon.appfactory.eventing.AppFactoryEventException;
 import org.wso2.carbon.appfactory.eventing.Event;
@@ -1125,6 +1127,40 @@ public class RestBasedJenkinsCIConnector {
 			List<NameValuePair> parameters = new ArrayList<NameValuePair>();
 			parameters.add(new NameValuePair("artifactType", artifactType));
 
+			String runtimesNameForApptype =
+					ApplicationTypeManager.getInstance().getApplicationTypeBean(artifactType)
+					                      .getRuntimes()[AppFactoryConstants.ZERO];
+					parameters.add(new NameValuePair(AppFactoryConstants.RUNTIMES_NAME_FOR_APPTYPE,runtimesNameForApptype));
+				RuntimeBean runtimeBean =
+						RuntimeManager.getInstance()
+						              .getRuntimeBean(runtimesNameForApptype);
+				if (runtimeBean!=null) {
+					parameters.add(new NameValuePair(AppFactoryConstants.RUNTIME_ALIAS_PREFIX,
+					                                 runtimeBean.getAliasPrefix() +
+					                                 AppFactoryConstants.EMPTY_STRING +
+					                                 stage));
+					parameters.add(new NameValuePair(
+							AppFactoryConstants.RUNTIME_CARTRIDGE_TYPE_PREFIX,
+							runtimeBean.getCartridgeTypePrefix() +
+							AppFactoryConstants.EMPTY_STRING + stage));
+					parameters
+							.add(new NameValuePair(AppFactoryConstants.RUNTIME_DEPLOYMENT_POLICY,
+							                       runtimeBean.getDeploymentPolicy()));
+					parameters.add(new NameValuePair(AppFactoryConstants.RUNTIME_AUTOSCALE_POLICY,
+					                                 runtimeBean.getAutoscalePolicy()));
+					parameters.add(new NameValuePair(AppFactoryConstants.RUNTIME_REPO_URL,
+					                                 runtimeBean.getRepoURL()));
+					parameters
+							.add(new NameValuePair(AppFactoryConstants.RUNTIME_DATA_CARTRIDGE_TYPE,
+							                       runtimeBean.getDataCartridgeType()));
+					parameters
+							.add(new NameValuePair(AppFactoryConstants.RUNTIME_DATA_CARTRIDGE_ALIAS,
+							                       runtimeBean.getDataCartridgeAlias()));
+					parameters.add(new NameValuePair(
+							AppFactoryConstants.RUNTIME_SUBSCRIBE_ON_DEPLOYMENT,
+							runtimeBean.getSubscribeOnDeployment()));
+				}
+
 			Object serverDeploymentPaths = ApplicationTypeManager.getInstance()
 					.getApplicationTypeBean(artifactType)
 					.getServerDeploymentPath();
@@ -1191,7 +1227,39 @@ public class RestBasedJenkinsCIConnector {
 		List<NameValuePair> parameters = new ArrayList<NameValuePair>();
 		parameters.add(new NameValuePair("jobName", jobName));
 		parameters.add(new NameValuePair("artifactType", artifactType));
-        parameters.add(new NameValuePair("deployerType",
+
+		String[] runtimeNameForApptype =
+				ApplicationTypeManager.getInstance().getApplicationTypeBean(artifactType)
+				                      .getRuntimes();
+		for (int runtimeCount = AppFactoryConstants.ZERO;
+		     runtimeCount < runtimeNameForApptype.length; runtimeCount++) {
+			RuntimeBean runtimeBean = RuntimeManager.getInstance().getRuntimeBean(
+					runtimeNameForApptype[runtimeCount]);
+			if (!(runtimeNameForApptype.equals(AppFactoryConstants.EMPTY_STRING))) {
+				parameters.add(new NameValuePair(AppFactoryConstants.RUNTIME_ALIAS_PREFIX,
+				                                 runtimeBean.getAliasPrefix() +
+				                                 AppFactoryConstants.EMPTY_STRING +
+				                                 stage));
+				parameters.add(new NameValuePair(AppFactoryConstants.RUNTIME_CARTRIDGE_TYPE_PREFIX,
+				                                 runtimeBean.getCartridgeTypePrefix() +
+				                                 AppFactoryConstants.EMPTY_STRING + stage));
+				parameters
+						.add(new NameValuePair(AppFactoryConstants.RUNTIME_DEPLOYMENT_POLICY,
+						                       runtimeBean.getDeploymentPolicy()));
+				parameters.add(new NameValuePair(AppFactoryConstants.RUNTIME_AUTOSCALE_POLICY,
+				                                 runtimeBean.getAutoscalePolicy()));
+				parameters.add(new NameValuePair(AppFactoryConstants.RUNTIME_REPO_URL,
+				                                 runtimeBean.getRepoURL()));
+				parameters.add(new NameValuePair(AppFactoryConstants.RUNTIME_DATA_CARTRIDGE_TYPE,
+				                                 runtimeBean.getDataCartridgeType()));
+				parameters.add(new NameValuePair(AppFactoryConstants.RUNTIME_DATA_CARTRIDGE_ALIAS,
+				                                 runtimeBean.getDataCartridgeAlias()));
+				parameters
+						.add(new NameValuePair(AppFactoryConstants.RUNTIME_SUBSCRIBE_ON_DEPLOYMENT,
+						                       runtimeBean.getSubscribeOnDeployment()));
+			}
+		}
+		parameters.add(new NameValuePair("deployerType",
                 ApplicationTypeManager.getInstance()
                         .getApplicationTypeBean(artifactType)
                         .getProperty("DeployerType").toString()));
@@ -1868,4 +1936,5 @@ public class RestBasedJenkinsCIConnector {
 		}
 		return httpStatusCode;
 	}
+
 }

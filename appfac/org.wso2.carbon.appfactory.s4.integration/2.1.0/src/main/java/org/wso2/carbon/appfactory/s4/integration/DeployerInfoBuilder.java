@@ -20,6 +20,7 @@ package org.wso2.carbon.appfactory.s4.integration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.appfactory.common.AppFactoryConfiguration;
+import org.wso2.carbon.appfactory.common.AppFactoryConstants;
 import org.wso2.carbon.appfactory.common.AppFactoryException;
 import org.wso2.carbon.appfactory.common.util.AppFactoryUtil;
 import org.wso2.carbon.appfactory.s4.integration.internal.ServiceReferenceHolder;
@@ -93,12 +94,15 @@ public class DeployerInfoBuilder {
 
         DeployerInfo deployerInfo = new DeployerInfo();
 
+
+
         String endpoint = configuration.getFirstProperty(
                 APPLICATION_DEPLOYMENT_DEPLOYMENT_STAGE + stage + DEPLOYER_APPLICATION_TYPE + "." + appType +
                         ".Endpoint");
 
+
 //        No endpoint has been defined. This is not the S2 Deployer
-        if (endpoint == null || "".equals(endpoint)) {
+        if (endpoint == null || AppFactoryConstants.EMPTY_STRING.equals(endpoint)) {
             return;
         }
         deployerInfo.setEndpoint(endpoint);
@@ -106,15 +110,11 @@ public class DeployerInfoBuilder {
         String deploymentPolicy = configuration.getFirstProperty(
                 APPLICATION_DEPLOYMENT_DEPLOYMENT_STAGE + stage + DEPLOYER_APPLICATION_TYPE + "." + appType +
                         ".Properties.Property.deploymentPolicy");
-        if (deploymentPolicy != null && !deploymentPolicy.equals("")) {
-            deployerInfo.setDeploymentPolicy(deploymentPolicy);
-        }
+
         String autoscalePolicy = configuration.getFirstProperty(
                 APPLICATION_DEPLOYMENT_DEPLOYMENT_STAGE + stage + DEPLOYER_APPLICATION_TYPE + "." + appType +
                         ".Properties.Property.autoscalePolicy");
-        if (autoscalePolicy != null && !autoscalePolicy.equals("")) {
-            deployerInfo.setAutoscalePolicy(autoscalePolicy);
-        }
+
 
 
         deployerInfo.setAlias(configuration.getFirstProperty(
@@ -133,13 +133,14 @@ public class DeployerInfoBuilder {
                 APPLICATION_DEPLOYMENT_DEPLOYMENT_STAGE + stage + DEPLOYER_APPLICATION_TYPE + "." + appType +
                         ".Properties.Property.dataCartridgeType"));
 
-        deployerInfo.setDataCartridgeAlias(configuration.getFirstProperty(
+       deployerInfo.setDataCartridgeAlias(configuration.getFirstProperty(
                 APPLICATION_DEPLOYMENT_DEPLOYMENT_STAGE + stage + DEPLOYER_APPLICATION_TYPE + "." + appType +
                         ".Properties.Property.dataCartridgeAlias"));
 
         deployerInfo.setEndpoint(configuration.getFirstProperty(
                 APPLICATION_DEPLOYMENT_DEPLOYMENT_STAGE + stage + DEPLOYER_APPLICATION_TYPE + "." + appType +
                         ".Endpoint"));
+
 
         String className = configuration.getFirstProperty(
                 APPLICATION_DEPLOYMENT_DEPLOYMENT_STAGE + stage + DEPLOYER_APPLICATION_TYPE + "." + appType +
@@ -160,19 +161,24 @@ public class DeployerInfoBuilder {
                 APPLICATION_DEPLOYMENT_DEPLOYMENT_STAGE + stage + DEPLOYER_APPLICATION_TYPE + "." + appType +
                         ".RepositoryProvider.Property.BaseURL"));
 
+
         deployerInfo.setAdminUserName(configuration.getFirstProperty(
                 APPLICATION_DEPLOYMENT_DEPLOYMENT_STAGE + stage + DEPLOYER_APPLICATION_TYPE + "." + appType +
                         ".RepositoryProvider.Property.AdminUserName"));
+
 
         deployerInfo.setAdminPassword(configuration.getFirstProperty(
                 APPLICATION_DEPLOYMENT_DEPLOYMENT_STAGE + stage + DEPLOYER_APPLICATION_TYPE + "." + appType +
                         ".RepositoryProvider.Property.AdminPassword"));
 
+
         deployerInfo.setRepoPattern(configuration.getFirstProperty(
                 APPLICATION_DEPLOYMENT_DEPLOYMENT_STAGE + stage + DEPLOYER_APPLICATION_TYPE + "." + appType +
                         ".RepositoryProvider.Property.URLPattern"));
+
         deployerInfo.setSubscribeOnDeployment(configuration.getFirstProperty(APPLICATION_DEPLOYMENT_DEPLOYMENT_STAGE + stage + DEPLOYER_APPLICATION_TYPE + "." + appType +
                 ".Properties.Property.subscribeOnDeployment"));
+
 
         deployerInfo.setAppType(appType);
 

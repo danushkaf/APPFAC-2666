@@ -21,6 +21,7 @@ package org.wso2.carbon.appfactory.core.runtime;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.appfactory.common.AppFactoryConfigurationBuilder;
+import org.wso2.carbon.appfactory.common.AppFactoryConstants;
 import org.wso2.carbon.appfactory.common.AppFactoryException;
 
 import java.io.File;
@@ -45,6 +46,7 @@ public class RuntimeManager {
 
 	/**
 	 * Getter for the runtime bean for the specific runtime
+	 *
 	 * @param applicationRuntime The type of the application. Ex:- appserver,tomcat
 	 * @return RuntimeBean
 	 */
@@ -54,6 +56,7 @@ public class RuntimeManager {
 
 	/**
 	 * Returns the current instance
+	 *
 	 * @return RuntimeManager instance
 	 * @throws org.wso2.carbon.appfactory.common.AppFactoryException
 	 */
@@ -63,30 +66,34 @@ public class RuntimeManager {
 
 	/**
 	 * Add new runtime from a runtime.xml
+	 *
 	 * @param file the runtime configuration file
 	 * @throws org.wso2.carbon.appfactory.common.AppFactoryException
 	 */
 	public void addAppRuntime(File file) throws AppFactoryException {
 		Map<String, String> appRuntimeConfig = new AppFactoryConfigurationBuilder(file
-                .getAbsolutePath()).loadConfigurationFile();
-		if(appRuntimeConfig == null){
-			throw new AppFactoryException("Configuration is null. Check the runtime.xml and try again.");
+				                                                                          .getAbsolutePath())
+				.loadConfigurationFile();
+		if (appRuntimeConfig == null) {
+			throw new AppFactoryException(
+					"Configuration is null. Check the runtime.xml and try again.");
 		}
 		initAppRuntimeConfig(appRuntimeConfig);
 	}
 
 	/**
 	 * Initialize the bean from the configuration
+	 *
 	 * @param config map of name value pairs from the content of the runtime.xml
 	 * @throws org.wso2.carbon.appfactory.common.AppFactoryException
 	 */
 	private void initAppRuntimeConfig(Map<String, String> config) throws AppFactoryException {
 
-		String runtimeName = config.get("Runtime");
+		String runtimeName = config.get(AppFactoryConstants.RUNTIME);
 		Properties properties = new Properties();
 
-		for (String key : config.keySet()){
-			if(config.get(key) != null) {
+		for (String key : config.keySet()) {
+			if (config.get(key) != null) {
 				properties.put(key, config.get(key));
 			} else {
 				log.warn("Property is not available in runtime configuration : " + key);
@@ -98,37 +105,43 @@ public class RuntimeManager {
 
 			applicationRuntimeBean = new RuntimeBean();
 			applicationRuntimeBean.setRuntimeName(runtimeName);
-			applicationRuntimeBean.setDeployerClassName(properties.getProperty("DeployerClassName"));
+			applicationRuntimeBean.setDeployerClassName(
+					properties.getProperty(AppFactoryConstants.RUNTIME_DEPLOYER_CLASSNAME));
 
 			applicationRuntimeBean.setRepositoryURLPattern(
-					properties.getProperty("RepositoryURLPattern"));
+					properties.getProperty(AppFactoryConstants.RUNTIME_REPOSITORY_URL_PATTERN));
 
-			applicationRuntimeBean.setAliasPrefix(properties.getProperty("AliasPrefix"));
+			applicationRuntimeBean.setAliasPrefix(
+					properties.getProperty(AppFactoryConstants.RUNTIME_ALIAS_PREFIX));
 			applicationRuntimeBean.setCartridgeTypePrefix(
-					properties.getProperty("CartridgeTypePrefix"));
-			applicationRuntimeBean.setDeploymentPolicy(properties.getProperty("DeploymentPolicy"));
-			applicationRuntimeBean.setAutoscalePolicy(properties.getProperty("AutoscalePolicy"));
-			if(properties.get("RepoURL")!=null) {
-				applicationRuntimeBean.setRepoURL(properties.getProperty("RepoURL"));
+					properties.getProperty(AppFactoryConstants.RUNTIME_CARTRIDGE_TYPE_PREFIX));
+			applicationRuntimeBean.setDeploymentPolicy(
+					properties.getProperty(AppFactoryConstants.RUNTIME_DEPLOYMENT_POLICY));
+			applicationRuntimeBean.setAutoscalePolicy(
+					properties.getProperty(AppFactoryConstants.RUNTIME_AUTOSCALE_POLICY));
+			if (properties.get(AppFactoryConstants.RUNTIME_REPO_URL) != null) {
+				applicationRuntimeBean
+						.setRepoURL(properties.getProperty(AppFactoryConstants.RUNTIME_REPO_URL));
 			}
-			if(properties.get("DataCartridgeType")!=null){
+			if (properties.get(AppFactoryConstants.RUNTIME_DATA_CARTRIDGE_TYPE) != null) {
 				applicationRuntimeBean.setDataCartridgeType(properties.getProperty(
-						"DataCartridgeType"));
+						AppFactoryConstants.RUNTIME_DATA_CARTRIDGE_TYPE));
 			}
-			if(properties.get("DataCartridgeAlias")!=null){
-				applicationRuntimeBean.setDataCartridgeAlias(properties.getProperty("DataCartridgeAlias"));
+			if (properties.get(AppFactoryConstants.RUNTIME_DATA_CARTRIDGE_ALIAS) != null) {
+				applicationRuntimeBean.setDataCartridgeAlias(
+						properties.getProperty(AppFactoryConstants.RUNTIME_DATA_CARTRIDGE_ALIAS));
 			}
-			if(properties.get("SubscribeOnDeployment") != null){
-				applicationRuntimeBean.setSubscribeOnDeployment(properties.getProperty("SubscribeOnDeployment"));
+			if (properties.get(AppFactoryConstants.RUNTIME_SUBSCRIBE_ON_DEPLOYMENT) != null) {
+				applicationRuntimeBean.setSubscribeOnDeployment(properties.getProperty(
+						AppFactoryConstants.RUNTIME_SUBSCRIBE_ON_DEPLOYMENT));
 			}
-
 
 			runtimeManager.getRuntimeBeanMap().put(runtimeName, applicationRuntimeBean);
 		} catch (NullPointerException e) {
 			String msg = "Exception occurred while reading the xml";
 			log.error(msg, e);
 			throw new AppFactoryException(msg, e);
-		}catch (Exception e) {
+		} catch (Exception e) {
 			String msg = "Exception occurred while reading the xml";
 			log.error(msg, e);
 			throw new AppFactoryException(msg, e);

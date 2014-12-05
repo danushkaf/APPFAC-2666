@@ -53,6 +53,27 @@ public class AppFactoryConstants {
 	public static final String PERMISSION_RESOURCE_CREATE = "/permission/admin/appfactory/resources/create/";
 	public static final String PROPERTY_ARTIFACT_VERSION_NAME = "TrunkVersioning.ServiceVersioning.ArtifactVersionName";
 
+	public static final String RUNTIMES="Runtimes";
+	public static final String RUNTIME="Runtime";
+	public static final String RUNTIME_DEPLOYER_CLASSNAME="DeployerClassName";
+	public static final String RUNTIME_REPOSITORY_URL_PATTERN="PAASArtifactStorageURLPattern";
+	public static final String RUNTIME_ALIAS_PREFIX="AliasPrefix";
+	public static final String RUNTIME_CARTRIDGE_TYPE_PREFIX="CartridgeTypePrefix";
+	public static final String RUNTIME_DEPLOYMENT_POLICY="DeploymentPolicy";
+	public static final String RUNTIME_AUTOSCALE_POLICY="AutoscalePolicy";
+	public static final String RUNTIME_REPO_URL="RepoURL";
+	public static final String RUNTIME_DATA_CARTRIDGE_TYPE="DataCartridgeType";
+	public static final String RUNTIME_DATA_CARTRIDGE_ALIAS="DataCartridgeAlias";
+	public static final String RUNTIME_SUBSCRIBE_ON_DEPLOYMENT="SubscribeOnDeployment";
+	public static final String RUNTIME_REPO_PROVIDER_URL="repoProviderUrl";
+
+	public static final String PASS_ARTIFACT_STORAGE_REPOSITORY_PROVIDER_ADMIN_USERNAME="PAASArtifactStorageRepositoryProvider.AdminUserName";
+	public static final String PASS_ARTIFACT_STORAGE_REPOSITORY_PROVIDER_ADMIN_PASSWORD="PAASArtifactStorageRepositoryProvider.AdminPassword";
+	public static final String PASS_ARTIFACT_STORAGE_REPOSITORY_PROVIDER_BASE_URL="PAASArtifactStorageRepositoryProvider.BaseURL";
+	public static final String PASS_ARTIFACT_STORAGE_REPOSITORY_PROVIDER_PROVIDER_CLASS="PAASArtifactStorageRepositoryProvider.ProviderClass";
+
+	public static final String RUNTIMES_NAME_FOR_APPTYPE="runtimesNameForApptype";
+
     /**
      * Defining archetype related constants
      */
@@ -367,6 +388,8 @@ public class AppFactoryConstants {
 	public static final String DOT = ".";
     public static final String DOT_WORD = "dot";
 	public static final String MINUS = "-";
+	public static final String EMPTY_STRING="";
+	public static final String COMMA=",";
 
 	/**
 	 * Enum to represent of different application stages.
