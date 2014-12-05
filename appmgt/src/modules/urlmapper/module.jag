@@ -1,0 +1,24 @@
+<%
+jagg.module("urlmapper", {
+
+    addNewCustomUrl:function () {
+        return jagg.require(jagg.getModulesDir() + "urlmapper/urlmapper.jag").addNewCustomUrl.apply(this, arguments);
+    },
+
+    updateExistingUnmappedCustomUrl:function () {
+        return jagg.require(jagg.getModulesDir() + "urlmapper/urlmapper.jag").updateExistingUnmappedCustomUrl.apply(this, arguments);
+    },
+
+    mapNewCustomUrlToVersion:function () {
+        return jagg.require(jagg.getModulesDir() + "urlmapper/urlmapper.jag").mapNewCustomUrlToVersion.apply(this, arguments);
+    },
+
+    remapDomainToVersion:function () {
+        return jagg.require(jagg.getModulesDir() + "urlmapper/urlmapper.jag").remapDomainToVersion.apply(this, arguments);
+    },
+
+    removeDomainMappingFromApplication:function () {
+        return jagg.require(jagg.getModulesDir() + "urlmapper/urlmapper.jag").removeDomainMappingFromApplication.apply(this, arguments);
+    }
+});
+%>

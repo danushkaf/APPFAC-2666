@@ -1,0 +1,141 @@
+<%
+include("/jagg/constants.jag");
+include("/jagg/config_reader.jag");
+
+var log = new Log("module/application/update/update.jag");
+
+
+var modLifecycle = jagg.module("lifecycle");
+var modManager = jagg.module("manager");
+var carbon = require('carbon');
+var server = carbon.server;
+
+// update the appinfo txt with the given values
+
+var editAppInfo = function (applicationName, applicationKey, applicationDescription,
+        applicationType,repositorytype, subdomain, repoAccessability, branchcount, owner) {
+
+	jagg.module("permission").checkUserActionPermission(applicationKey,PERMISSION_APPLICATION_MEMBER);
+	var path = "/_system/governance/" + APPLICATIONS + applicationKey + APP_INFO;
+	
+	var key = 'application';
+	var content = '<![CDATA[<metadata xmlns="http://www.wso2.org/governance/metadata">'+
+	'<application>'+
+	'<description>'+applicationDescription+'</description>'+
+	'<name>'+applicationName+'</name>'+
+	'<key>'+applicationKey+'</key>'+
+	'<type>'+applicationType+'</type>'+
+	'<repositorytype>'+repositorytype+'</repositorytype>'+
+	'<repoAccessability>'+repoAccessability+'</repoAccessability>'+
+	'<branchcount>'+branchcount+'</branchcount>'+
+	'<owner>'+owner+'</owner>'+
+	'<mappedsubdomain>'+subdomain+'</mappedsubdomain>'+
+	'</application>'+
+	'</metadata>]]>';
+	
+	var ws = require('ws');
+	var editAppInfoReq = new ws.WSRequest();
+	var options = new Array();
+	options.useSOAP = 1.1;
+	options.action = "urn:editArtifact";
+	modManager.setAuthHeaders(options);
+	var payload = '<ser:editArtifact xmlns:ser="http://services.generic.governance.carbon.wso2.org">'+
+	'<ser:path>'+path+'</ser:path>'+
+	'<ser:key>'+key+'</ser:key>'+
+	'<ser:info>'+content+'</ser:info>'+
+	'<ser:lifecycleAttribute></ser:lifecycleAttribute>'+
+	'</ser:editArtifact>';
+	
+	var result;
+	
+	try {
+		var endPoint =getProperty(GREG_SERVER_URL) + "ManageGenericArtifactService";
+		editAppInfoReq.open(options,endPoint, false);
+		editAppInfoReq.send(payload);
+		result = editAppInfoReq.responseE4X;
+		
+		if(log.isDebugEnabled()){
+			log.debug("Invoking service endpoint :"+endPoint+" returned result :"+result);
+		}
+		return result;
+	} catch (e) {
+		log.error("Error in calling manage generic artifact service "+e.toString());
+		throw "Error in calling manage generic artifact service "+e.toString();
+	}
+};
+
+var editAppVersionInfo = function (applicationKey, version, subdomain, currentStatus, deployId, lastStatus,promoteStatus) {
+	jagg.module("permission").checkUserActionPermission(applicationKey,PERMISSION_APPLICATION_MEMBER);
+	var path = "/_system/governance/" + APPLICATIONS + applicationKey + "/" + version;
+	
+	 key = 'appversion';
+	 content = '<![CDATA[<metadata xmlns="http://www.wso2.org/governance/metadata">'+
+			     	'<appversion>'+
+				         '<key>'+applicationKey+'</key>'+
+				         '<version>'+ version +'</version>'+
+				         '<prodmappedsubdomain>'+ subdomain +'</prodmappedsubdomain>'+
+				         '<autodeployment>false</autodeployment>'+
+				         '<isAutoBuild>true</isAutoBuild>'+
+				         '<isAutoDeploy>true</isAutoDeploy>'+
+				         '<CurrentBuildStatus>'+currentStatus+'</CurrentBuildStatus>'+
+				         '<PromoteStatus>'+promoteStatus+'</PromoteStatus>'+
+				         '<lastdeployedid>'+deployId+'</lastdeployedid>'+
+				         '<LastBuildStatus>'+lastStatus+'</LastBuildStatus>'+
+			         '</appversion>'+
+			     	'<serviceLifecycle><lifecycleName>'+LIFE_CYCLE_NAME+'</lifecycleName></serviceLifecycle>'+
+			     '</metadata>]]>';
+
+	
+	var ws = require('ws');
+	var editAppInfoReq = new ws.WSRequest();
+	var options = new Array();
+	options.useSOAP = 1.1;
+	options.action = "urn:editArtifact";
+	modManager.setAuthHeaders(options);
+	var payload = '<ser:editArtifact xmlns:ser="http://services.generic.governance.carbon.wso2.org">'+
+	'<ser:path>'+path+'</ser:path>'+
+	'<ser:key>'+key+'</ser:key>'+
+	'<ser:info>'+content+'</ser:info>'+
+	'<ser:lifecycleAttribute>serviceLifecycle_lifecycleName</ser:lifecycleAttribute>'+
+	'</ser:editArtifact>';
+	
+	var result;
+	
+	try {
+		var endPoint =getProperty(GREG_SERVER_URL) + "ManageGenericArtifactService";
+		editAppInfoReq.open(options,endPoint, false);
+		editAppInfoReq.send(payload);
+		result = editAppInfoReq.responseE4X;
+		
+		if(log.isDebugEnabled()){
+			log.debug("Invoking service endpoint :"+endPoint+" returned result :"+result);
+		}
+		return result;
+	} catch (e) {
+		log.error("Error in calling manage generic artifact service "+e.toString());
+		throw "Error in calling manage generic artifact service "+e.toString();
+	}
+};
+
+
+var updatePromoteStatus = function (appKey, nextStage, version, state){
+    jagg.module("permission").checkUserActionPermission(appKey,PERMISSION_APPLICATION_MEMBER);
+	var tenantDomain=modManager.getTenantDomain() ;
+	var applicationManagementService;
+	var context=multitenancy.getPrivilegedCarbonContext();
+    var tenantManager= multitenancy.getTenantManager();
+	try{
+	        context.startTenantFlow();
+            context.getThreadLocalCarbonContext().setTenantId(tenantManager.getTenantId(tenantDomain));
+            context.getThreadLocalCarbonContext().setTenantDomain(tenantDomain);
+            applicationManagementService =server.osgiService('org.wso2.carbon.appfactory.application.mgt.service.ApplicationManagementService');
+       	    applicationManagementService.updateRxtWithPromoteState(appKey,nextStage,version,"Promote",state);
+	}catch(e){
+	    log.error(e);
+	    throw new Error("Error while updating promote status for : "+ appKey + " in stage: " + nextStage);
+	}finally{
+	   context.endTenantFlow();
+    }
+}
+
+%>

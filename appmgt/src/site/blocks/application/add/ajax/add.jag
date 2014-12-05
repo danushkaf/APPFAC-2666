@@ -1,0 +1,235 @@
+<%
+include("/jagg/jagg.jag");
+include("/jagg/constants.jag");
+include("/jagg/config_reader.jag");
+
+var modManager = jagg.module("manager");
+var lifeCycleModule = jagg.module("lifecycle");
+var urlMapper = jagg.module("urlmapper");
+var log=new Log();
+
+(function () {
+	var mod, obj, result,
+	action = request.getParameter("action"),
+	site = require("/site/conf/site.json");
+    if (!jagg.getUser()) {
+        print(UNAUTHORIZED_ERROR_RESPONSE);
+        return;
+    }
+
+	if (action == "createNewApplication") {
+		mod = jagg.module("application");
+		var registryMod = jagg.module("registry");
+		var applicationName = request.getParameter("applicationName");
+		var applicationKey = request.getParameter("applicationKey");
+		var applicationDescription = request.getParameter("applicationDescription");
+		var applicationType = request.getParameter("applicationType");
+		var repositoryType = request.getParameter("repositoryType");
+                var repoAccessibility = request.getParameter("repoAccessibility");
+		var userName = request.getParameter("userName");
+		var applicationURL = request.getParameter("applicationURL");
+		var response = {};
+		if (jagg.module("permission").isUserAccessGrantedForPlatform(PERMISSION_APPLICATION_CREATE)) {
+			try {
+				var repositoryProviders = getProperties('RepositoryProviderConfig');
+
+				var message = "Repository type ".concat(repositoryType).concat(" is not Configured!");
+				response.message = message;
+				response.result = 0;
+                var appTypeDisplayName = modManager.getApplicationTypeBean(applicationType).getDisplayName();
+				if (appTypeDisplayName) {
+					// adds to session in 'Pending state', until the application
+					// is created.
+                    if(!isApplicationDuplicateWithSession(applicationKey,applicationName, repositoryType,
+                                                          applicationDescription, applicationType, userName,appTypeDisplayName)){
+						for (var provider in repositoryProviders) {
+							if (repositoryType == repositoryProviders[provider]) {
+
+	                            result = mod.createApplicationBPEL(applicationName, applicationKey,
+    							    applicationDescription, applicationType, repoAccessibility, repositoryType, userName, applicationURL,'trunk', LIFE_CYCLE_NAME);
+
+								message = "Application was created under Repository type ".concat(repositoryType);
+								response.message = message;
+								response.result = 1;
+								uploadApplicationIcon(applicationKey, request.getFile("appIcon"));
+							}
+						}   // end of for loop
+					}
+				} else {
+					message = "Application type ".concat(applicationType).concat(" is not Supported!");
+					response.message = message;
+					response.result = 0;
+				}
+
+				print(response);
+
+			} catch (e) {
+				var err = "Error while creating the application";
+				log.error( err + e.message);
+				throw ( err + e.message )
+			}
+		} else {
+
+			response.result = 0;
+			response.message = "You don't have permission to create application";
+			print(response);
+		}
+
+	}else if (action == "uploadExistingApplication") {
+		var registryMod = jagg.module("registry");
+
+	var applicationName = request.getParameter("applicationName");
+	var applicationKey = request.getParameter("applicationKey");
+	var applicationDescription = request.getParameter("applicationDescription");
+	var applicationType = request.getParameter("uploadableAppType");
+	var repoAccessibility = request.getParameter("repoAccessibility");
+	var repositoryType = getProperty("RepositoryProviderConfig");
+	var userName = request.getParameter("userName");
+	var applicationURL = request.getParameter("applicationURL");
+
+	var response = {};
+	try{
+		if (jagg.module("permission").isUserAccessGrantedForPlatform(PERMISSION_APPLICATION_CREATE)) {
+            var appTypeDisplayName = modManager.getApplicationTypeBean(applicationType).getDisplayName();
+            if(!isApplicationDuplicateWithSession(applicationKey,applicationName, repositoryType,
+                                                  applicationDescription, applicationType, userName,appTypeDisplayName)){
+				mod = jagg.module("application");
+				mod.stroreUploadedApplication(applicationKey + "-1.0.0", request.getFile("uploaded_application"), applicationType);
+				result = mod.createApplicationBPEL(applicationName, applicationKey, 
+				    applicationDescription, applicationType, repoAccessibility, repositoryType, userName, applicationURL, UPLOADABLE_APPLICATION_INITIAL_VERSION, UPLOADABLE_APPLICATION_LIFE_CYCLE_NAME);
+				uploadApplicationIcon(request.getFile("appIcon"));
+
+				var message = "New application was created with uploaded artifact";
+				response.message = message;
+				response.result = 1;
+			}else{
+				response.message = "Another application with same key is in the process of creation right now.";
+				response.result = 0;
+			}
+		}else{
+			response.message = "You don't have permission to create application";
+			response.result = 0;
+		}
+		print(response);
+
+		} catch (e) {
+			var err = "Error while creating the application by uploading existing application";
+			log.error( err + e.message);
+			throw ( err + e.message );
+		}
+
+
+	} else if (action == "isApplicationKeyAvailable") {
+
+		var applicationKey = request.getParameter("applicationKey");
+        var response = {};
+        if (jagg.module("permission").isUserAccessGrantedForPlatform(PERMISSION_APPLICATION_CREATE)){
+            mod = jagg.module("application");
+            try {
+                var status = mod.isApplicationKeyAvailable(applicationKey, true);
+                print(status);
+
+            } catch (e) {
+                throw "Error while checking the key availability";
+            }
+        } else {
+            response.result = 0;
+            response.message = "You don't have permission to check the application key availability";
+            print(response);
+        }
+
+    }  else if (action == "isAppNameAlreadyAvailable") {
+        var appName = request.getParameter("applicationName");
+        var response = {};
+        if (jagg.module("permission").isUserAccessGrantedForPlatform(PERMISSION_APPLICATION_CREATE)){
+            mod = jagg.module("application");
+            try {
+                var status = mod.isAppNameAlreadyAvailable(appName);
+                print(status);
+
+            } catch (e) {
+                throw "Error while checking the app name availability";
+            }
+        } else {
+            response.result = 0;
+            response.message = "You don't have permission to check the application name availability";
+            print(response);
+        }
+
+    }  else {
+		throw new Error("No action specified");
+	}
+}());
+
+function isApplicationDuplicateWithSession(applicationKey, applicationName, repositoryType, description,
+                                           applicationType, userName,appTypeDisplayName){
+
+	var pendingApplications = [];
+    var isDuplicateWithSession = false;
+    var mod = jagg.module("application");
+
+    var userHomeData = mod.getUpdatedUserHomeData();
+    if(userHomeData[APPLICATION_CREATION_STATUS.PENDING][applicationKey]){
+        isDuplicateWithSession = true ;
+    }
+
+	if(!isDuplicateWithSession){
+
+		var appContainer = {};
+		appContainer.userName = userName;
+
+		var thisApplication = {};
+		thisApplication.key = applicationKey;
+		thisApplication.name = applicationName;
+		thisApplication.repositoryType = repositoryType;
+		thisApplication.description = description;
+		thisApplication.type = applicationType;
+		thisApplication.roles = "";
+		thisApplication.isPending = true;
+        thisApplication.applicationCreationStatus = APPLICATION_CREATION_STATUS.PENDING;
+        thisApplication.typeDisplayName = appTypeDisplayName;
+
+		appContainer.app = thisApplication;
+
+		pendingApplications.push(appContainer);
+
+		// adds to session in 'Pending state', until the application
+		// is created.
+
+        /**
+         * When application is deleted the app key of the deleted app will be added to the application context and it will
+         * be used to remove the corresponding application in user home cache. Therefore when we creating an app,
+         * we have to remove the app key from the deleted app keys list, of the application context.
+         */
+        mod.removeDeletedAppKeyFromApplicationContext(applicationKey);
+        // add application to user home cache
+        mod.addAppToUserHomeCache(APPLICATION_CREATION_STATUS.PENDING,applicationKey,thisApplication);
+
+	}
+
+	return isDuplicateWithSession;
+}
+
+/**
+ * Handles upload application icon process.
+ *
+ * @param applicationKey application key
+ * @param appIcon file object of the appIcon
+ */
+function uploadApplicationIcon(applicationKey, appIcon){
+	var registryMod = jagg.module("registry");
+	try{
+		if(appIcon){
+			var regPath = "/_system/governance/repository/applications/"+applicationKey+"/icon";
+			var type = 'image/jpg';
+			registryMod.createResourceInTenantSpace(regPath,appIcon.getStream(),type);
+		}
+	}catch(e){
+		var tenantDomain = modManager.getTenantDomain();
+		log.error("Error while uploading appIcon or no appIcon found to upload for application: "+
+				  applicationKey+" tenant: "+tenantDomain + e.message);
+	}
+}
+
+%>
+

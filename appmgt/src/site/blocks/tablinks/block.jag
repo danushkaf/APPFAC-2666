@@ -1,0 +1,107 @@
+<%
+include("/jagg/jagg.jag");
+include("/jagg/constants.jag");
+include("/jagg/config_reader.jag");
+jagg.block("tablinks", {
+    initialize:function (data) {
+    },
+    getInputs:function () {
+    },
+    getOutputs:function (inputs) {
+        var userName = jagg.getUser();
+    	var dashboardUrl = "";
+	    var cloudMgtUrl = "";
+    	var dashboardPath = "";
+    	var serverUrl = getProperty(DASHBOARD_SERVER_URL);
+    	var mod = jagg.module("manager");
+    	var result = false;
+    	var carbon = require('carbon');
+    	var server = carbon.server;
+    	var realmService = server.osgiService('org.wso2.carbon.user.core.service.RealmService');
+    	var tenantDomain = null;
+
+        //Tablink permissions
+        var isOverviewAllowed = true;
+        var isTeamAllowed = true;
+        var isReposAndBuildsAllowed = false;
+        var isResourcesAllowed = false;
+        var isIssuesAllowed = true;
+        var isLifecylceAllowed = false;
+        var isLogsAllowed = false;
+
+    	var permissionModule = jagg.module("permission");
+        var manager = jagg.module("manager");
+    	var tenantID = null;
+    	var hasTenantLevelUserMgtPermission = null;
+    	var isOTtenant = false;
+    	var hasCXOPermission = null;
+    	var deploymentStages = getProperties(DEPLOYMENT_STAGES);
+
+    	var applicationType = false;
+    	var isUploadableAppType = false;
+
+    	var isOtherServicesTabAvailable = getProperty(SHOW_OTHER_SERVICES_TAB);
+
+    	var log = new Log();
+
+    	if(userName){
+
+    		if(!inputs.applicationKey){
+    			tenantDomain = mod.getTenantDomain();
+    			tenantID = realmService.getTenantManager().getTenantId(tenantDomain);
+    			hasTenantLevelUserMgtPermission = permissionModule.hasTenantLevelUserMgtPermission();
+    			if(session.get("TENANT_INFO")){
+    			    isOTtenant = session.get("TENANT_INFO").isOTTenant;
+    			}
+    			hasCXOPermission = permissionModule.isUserAccessGrantedForPlatform(PERMISSION_CXO_DASHBOARD);
+    			dashboardPath = getProperty(TENANT_ADMIN__DASHBOARD_PATH);
+    			dashboardUrl = serverUrl + dashboardPath;
+			    cloudMgtUrl = getProperty(CLOUDMGT_SERVER_URL);
+		
+    		}else{
+
+    			var applicationKey = inputs.applicationKey;
+    			var applicationName = inputs.applicationName;
+
+                hasTenantLevelUserMgtPermission = permissionModule.hasTenantLevelUserMgtPermission();
+
+                // Set tablinks
+                isOverviewAllowed = (jagg.module("permission").isUserAccessGrantedForTablink(applicationKey , PERMISSION_TABLINK_OVERVIEW) || hasTenantLevelUserMgtPermission);
+                isTeamAllowed  = (jagg.module("permission").isUserAccessGrantedForTablink(applicationKey , PERMISSION_TABLINK_TEAM) || hasTenantLevelUserMgtPermission);
+                isReposAndBuildsAllowed = (jagg.module("permission").isUserAccessGrantedForTablink(applicationKey , PERMISSION_TABLINK_REPOS_AND_BUILDS) || hasTenantLevelUserMgtPermission);
+                isResourcesAllowed = (jagg.module("permission").isUserAccessGrantedForTablink(applicationKey , PERMISSION_TABLINK_RESOURCES) || hasTenantLevelUserMgtPermission);
+                isIssuesAllowed = (jagg.module("permission").isUserAccessGrantedForTablink(applicationKey , PERMISSION_TABLINK_ISSUES) || hasTenantLevelUserMgtPermission);
+
+                var isLifecylceAllowedDemoteTo = jagg.module("permission").isUserAccessGrantedForTablink(applicationKey , PERMISSION_TABLINK_LIFECYCLE_MANAGEMENT_DEMOTE_TO);
+                var isLifecylceAllowedPromoteTo = jagg.module("permission").isUserAccessGrantedForTablink(applicationKey , PERMISSION_TABLINK_LIFECYCLE_MANAGEMENT_PROMOTE_TO);
+                isLifecylceAllowed = (isLifecylceAllowedDemoteTo || isLifecylceAllowedPromoteTo || hasTenantLevelUserMgtPermission);
+
+                isLogsAllowed = (jagg.module("permission").isUserAccessGrantedForTablink(applicationKey , PERMISSION_TABLINK_LOGS) || hasTenantLevelUserMgtPermission);
+
+                applicationType = manager.getApplicationType(applicationKey);
+    			isUploadableAppType = manager.getApplicationTypeBean(applicationType).isUploadableAppType();
+
+    		}
+    	}
+        return {
+            "userName":userName,
+            "isOTtenant":isOTtenant,
+            "hasCXOPermission":hasCXOPermission,
+            "hasTenantLevelUserMgtPermission":hasTenantLevelUserMgtPermission,
+            "dashboardUrl":dashboardUrl,
+            "dashboardPath":dashboardPath,
+            "deploymentStages":deploymentStages,
+            "applicationType":applicationType,
+            "isUploadableAppType":isUploadableAppType,
+            "isOtherServicesTabAvailable":isOtherServicesTabAvailable,
+            "isOverviewAllowed":isOverviewAllowed,
+            "isTeamAllowed":isTeamAllowed,
+            "isReposAndBuildsAllowed":isReposAndBuildsAllowed,
+            "isResourcesAllowed":isResourcesAllowed,
+            "isIssuesAllowed":isIssuesAllowed,
+            "isLifecylceAllowed":isLifecylceAllowed,
+            "isLogsAllowed":isLogsAllowed
+        };
+    }
+});
+%>

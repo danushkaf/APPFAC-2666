@@ -1,0 +1,23 @@
+<%
+include("/jagg/constants.jag");
+include("/jagg/util.jag");
+jagg.block("resources/apis/get", {
+    initialize:function (data) {
+
+    },
+    
+    getOutputs:function (inputs) {
+		var log = new Log();
+		var applicationKey = request.getParameter("applicationKey");
+        var hasCreateResourcePermissions= hasUILevelResourceCreationPermission(applicationKey);
+	var helpTips = jagg.module("help").getHelpTips("resources-apis");
+       
+		return {
+			"hasCreateResourcePermissions": hasCreateResourcePermissions,
+			"helpTips":helpTips
+		};
+	}
+
+
+});
+%>

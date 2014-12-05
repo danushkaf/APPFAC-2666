@@ -1,0 +1,231 @@
+<% jagg.template("resources/datasource/get", function(inputs, outputs, jagg) {
+    var applicationKey = request.getParameter("applicationKey");
+    var applicationName = request.getParameter("applicationName");
+    var datasources = outputs.datasources;
+
+    var hasCreatePermission = outputs.hasResourceCreatePermissionInAnyEnvironment;
+%>
+<script xmlns="http://www.w3.org/1999/html">
+    var printableDS=[];
+    function tabShowHide(obj) {
+        var toShow = $(obj).attr('data-value');
+        $('.tag-content').hide();
+        $('#' + toShow).show();
+
+    }
+    $(document).ready(function(){
+        convertDataSourcesToPrintableFormat();
+    });
+
+function convertDataSourcesToPrintableFormat(){
+    $('#dbSection').show();
+    $('#dbSection').append('<span id="dbSectionSpinner" class="icon-spinner icon-spin icon-large spin-large" style="margin:5px;font-size:30px;width:40px;height:40px;line-height:40px;"></span>');
+	jagg.post("../blocks/resources/datasource/get/ajax/list.jag", {
+        action: "getDatasourceInfo",
+        applicationKey: "<%=applicationKey%>"
+    }, function (result) {
+        if (result !== undefined) {
+            var datasourcesByName = jQuery.parseJSON(result);
+			constructDSHTML(datasourcesByName);
+        }
+    }, function (jqXHR, textStatus, errorThrown) {
+    	$('#contentHeader').html("");
+
+    	if (jqXHR.status != 0){
+            jagg.message({content:'Error occurred while reading datasources',type:'error', id:'datasourceoverview' });
+    	}
+
+    });
+}
+
+function constructDSHeaders(){
+    return '<li class="list_row_item first_list_row_item">' +
+						'<ul class="list_row first_list_row">' +
+							'<li class="col-3">' +
+								'<h2 class="list_col_heading">Name</h2>' +
+							'</li>' +
+							'<li class="col-5">' +
+								'<h2 class="list_col_heading">Description</h2>' +
+							'</li>' +
+							'<li class="col-4">' +
+								'<h2 class="list_col_heading">Values</h2>' +
+							'</li>' +
+						'</ul>' +
+					'</li>';
+}
+
+function constructDSHTML(datasourcesByName){
+    var $table='';
+    var count = 0;
+
+    for (var index in datasourcesByName) {
+        var datasources = datasourcesByName[index];
+        if (datasources.length > 0 ) {
+            var stages = [];
+            var description = "";
+            var name = "";
+            for (var i in datasources) {
+                var datasource = datasources[i];
+                if (i == 0) {
+                    description = datasource.description;
+                    name = datasource.name;
+                }
+                stages[i] = datasource.stage;
+            }
+            count++;
+            $table += constructDSRow(name, description, stages);
+        }
+    }
+
+    $('#dbSectionSpinner').hide();
+    if(count == 0){
+    	$('#contentHeader').html("<div class='noData-message'>Data Sources have not been created yet.</div>");
+    }else{
+    	$('#dbSection').empty().append(constructDSHeaders()).append($table);
+    }
+
+    $('.dsLink').click(function(){
+        var dsName=$(this).attr('data-dsname');
+        var stage=$(this).attr('stage');
+        window.location.replace("<%=jagg.getAbsoluteUrl("/site/pages/editdatasource.jag")%>?applicationName=<%=applicationName%>&applicationKey=<%=applicationKey%>&dsName="+dsName+"&currentStage="+stage);
+    });
+     $('.stage_label').click(function(){
+        var dsName=$(this).attr('data-dsname');
+        var stage=this.innerHTML;
+        window.location.replace("<%=jagg.getAbsoluteUrl("/site/pages/editdatasource.jag")%>?applicationName=<%=applicationName%>&applicationKey=<%=applicationKey%>&dsName="+dsName+"&currentStage="+stage);
+    });
+
+	    	ZeroClipboard.setDefaults(_defaults);
+            var clip = new ZeroClipboard($('.copy_link'));
+            clip.on( 'load', function(client) {});
+            clip.on( 'complete', function(client, args) {
+                $('.copy_link').qtip({
+                        content:{
+                                attr: 'data-tooltip'
+                        },
+                        show:{
+                                event:'click',
+                                ready:true
+                        },
+                        hide:{
+                                distance:20
+                        }
+                    });
+            });
+            clip.on( 'mousedown', function(client) { } );
+
+
+}
+
+    function constructDSRow(name , description, stages){
+
+        var $row='<li class="list_row_item first_list_row_item">'+
+                '<ul class="list_row first_list_row">'+
+                '<li class="col-3">'+
+                '<div class="list_col_content">'+
+                '<ul class="list"><li>' + name +
+                '</li></ul>'+
+                '</div>'+
+                '</li>'+
+
+                '<li class="col-5 datasources_description_col">'+
+                '<div class="list_col_content">' +
+                '<ul class="list">'+
+                '<li>' +
+                description +
+                '</li>' +
+                '</ul>' +
+                '</div>'+
+                '</li>'+
+
+                '<li class="col-4">'+
+                '<div class="list_col_content">';
+
+        for(var k in stages) {
+            var url = "<%=jagg.getAbsoluteUrl("/site/pages/editdatasource.jag")%>?applicationName=<%=applicationName%>&applicationKey=<%=applicationKey%>&dsName=" + name + "&currentStage=" + stages[k];
+            $row += '<a title="Edit" style="margin-left:0px;text-decoration:none" href="' +url +'"><span class="icon-edit"></span></a><span style="padding-left:6px;font-size: 0.857142857em;"> <b>'+ stages[k] +'</b></span></br>';
+        }
+        $row += '</div>'+
+                '</li>'+
+
+                '</ul>'+
+                '<div id="code'+name+'" style="display: none;" class="code">'+
+                '</div><div></li>';
+        return $row;
+    }
+
+</script>
+
+ <div class="container">
+				<article class="main">
+
+                        <header><div><% jagg.includeBlock("page/messages", null); %>
+                            <% jagg.includeBlock("page/eventing", {"applicationKey":null,"pageName":PAGES.RESOURCES}); %>
+                        <% jagg.includeBlock("page/notification-wall", {"wall_name":applicationKey+" - App Wall","applicationKey":applicationKey,"pageName":"App Home"}); %></div>
+                        	<div class="content">
+                                <h1>Runtime Configs</h1>
+                             </div>
+                        </header>
+                        <% jagg.includeBlock("resources/menu", {page:'datasources',applicationName:applicationName,applicationKey:applicationKey}); %>
+                        <% jagg.includeBlock("page/help", {"section": "resources-datasources"}); %>
+                        <section class="separator">
+                            <div class="page_nav">
+                                <div class="content clear">
+                                    <ol class="breadcrumb left">
+                                            <li class="breadcrumb_item"><h2>Datasources</h2></li>
+                                    </ol>
+                                    <div class="right btn_list_box">
+                                        <ul class="inline_box inline_list btn_list">
+
+                                        	<% var disableTxt = "";
+    if(!hasCreatePermission){
+        disableTxt= 'disabled="disabled"';
+    }
+
+    %>
+    <li class="inline_item"><button onclick="javascript:location.href='<%=jagg.getAbsoluteUrl("/site/pages/dbadministration.jag")%>?applicationName=<%=applicationName%>&applicationKey=<%=applicationKey%>'" class="btn main btn_list_first" type="button" <%=disableTxt%>>Add Datasource</button></li>
+                                        </ul>
+                                        <div class="clearfix"></div>
+                                     </div>
+
+
+                                </div>
+                            </div>
+                            <div class="content clear well" >
+                                <ul class="list_table push_top_20" id="contentHeader">
+                                   <div id="dbSection">
+                                   </div>
+                                </ul>
+                            </div>
+                        </section>
+                        <div class="clearfix"></div>
+                 </article>
+            </div><!-- /container -->
+<script type="text/javascript">
+// Create the tooltips only on document load
+$(document).ready(function()
+{
+  $('.datasource-description dd').each(function(){
+      if($(this).html().length > 24){
+          $(this).qtip(
+             {
+                 content: {
+                             text: $(this).html()
+                          },
+                 show: {
+                     when: 'click',
+                     solo: true // Only show one tooltip at a time
+                 },
+                 hide: 'unfocus',
+                 style: {
+                                classes: 'popup_status_box tooltip',
+                                widget: false,
+                                def: false
+                            }
+             });
+      }
+  });
+
+});
+</script>
+<% }); %>

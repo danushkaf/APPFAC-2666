@@ -1,6 +1,6 @@
 /*
  *
- *  * Copyright 2005-2014 WSO2, Inc. (http://wso2.com)
+ *  * Copyright 2014 WSO2, Inc. (http://wso2.com)
  *  *
  *  * Licensed under the Apache License, Version 2.0 (the "License");
  *  * you may not use this file except in compliance with the License.
@@ -35,8 +35,7 @@ import java.util.Properties;
 public class RuntimeManager {
 	private static final Log log = LogFactory.getLog(RuntimeManager.class);
 	private Map<String, RuntimeBean> runtimeBeanMap = new HashMap<String, RuntimeBean>();
-	private static final RuntimeManager
-			runtimeManager = new RuntimeManager();
+	private static final RuntimeManager runtimeManager = new RuntimeManager();
 
 	/**
 	 * Constructor

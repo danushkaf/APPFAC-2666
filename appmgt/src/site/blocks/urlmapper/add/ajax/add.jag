@@ -1,0 +1,47 @@
+<%
+include("/jagg/jagg.jag");
+include("/jagg/constants.jag");
+include("/jagg/config_reader.jag");
+
+var lifeCycleModule = jagg.module("lifecycle");
+var log=new Log();
+var mod = jagg.module("urlmapper");
+var permission = jagg.module("permission");
+
+(function () {
+	action = request.getParameter("action"),
+	site = require("/site/conf/site.json");
+    if (!jagg.getUser()) {
+        print(UNAUTHORIZED_ERROR_RESPONSE);
+        return;
+    }
+	if(action == "addNewCustomUrl"){
+        var newCustomUrl = request.getParameter("newCustomUrl");
+        newCustomUrl = newCustomUrl.toLowerCase();
+        var applicationKey = request.getParameter("applicationKey");
+        if (permission.isUserAccessGranted(applicationKey, PERMISSION_DOMAIN_MAPPING)){
+            var stage = getProperty(FINE_GRAINED_DOMAIN_MAPPING);
+            try {
+                mod.addNewCustomUrl(stage, newCustomUrl, applicationKey, null, true);
+            } catch (e) {
+                var msg = "Error while adding new customer url: "+ newCustomUrl +" for application: "+applicationKey
+                        +" in stage: " + stage;
+                log.error(msg);
+                log.error(e);
+                response.status = 400;
+                response.content = e;
+            }
+
+        } else {
+            response.status = 401;
+            response.content = "Unauthorized!!! Only Application Owner has permission to complete this action";
+        }
+    }else {
+		throw new Error("No action specified");
+	}
+}());
+
+
+
+%>
+

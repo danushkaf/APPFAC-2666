@@ -1,0 +1,14 @@
+<%
+include('constants.jag');
+
+function dbCorrelationKey (appKey, dbName, stageName){
+    var correlationKey = appKey + "-" + stageName + "-database-" + dbName;
+    return correlationKey;
+}
+
+function dbPrivilegeCorrelationKey (appKey, dbname, stage, username){
+    var correlationKey = appKey + "-" + stage + "-dbPrivilege-" + dbname + "-" + username
+    return correlationKey;
+}
+
+%>

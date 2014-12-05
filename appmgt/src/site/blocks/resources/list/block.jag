@@ -1,0 +1,59 @@
+<%
+include('/jagg/constants.jag');
+include('/jagg/config_reader.jag');
+include("/jagg/util.jag");
+jagg.block("resources/list", {
+    initialize: function (data) {
+
+    },
+    getInputs: function () {
+        return {
+            "applicationKey": null
+        }
+    },
+
+    getOutputs: function (inputs) {
+    	var log = new Log();
+    	var permissionModule = jagg.module("permission");
+    	var datasourceModule = jagg.module("resources");
+    	var deploymentStages = getProperties(DEPLOYMENT_STAGES);
+    	var hasConfigureDbAdministrationPermissions = {};
+    	var hasConfigureResourcePermissions = {};
+    	var datasources = {};
+    	var hasDataSourceModifyPermission =  false;
+    	var isDataSourceRetrieveSucceeded = false;
+    	for (var i = 0; i < deploymentStages.length; i++) {
+    		// TODO - remove these
+    		var hasConfigureDbAdministrationPermission = permissionModule.isUserAccessGranted(inputs.applicationKey, PERMISSION_RESOURCES_UPDATE_FOR_STAGE + deploymentStages[i]);
+    		hasConfigureDbAdministrationPermissions[i] = hasConfigureDbAdministrationPermission;
+
+    		var hasConfigureResourcePermission = permissionModule.isUserAccessGranted(inputs.applicationKey, PERMISSION_RESOURCES_UPDATE_FOR_STAGE + deploymentStages[i]);
+    		hasConfigureDbAdministrationPermissions[i] = hasConfigureResourcePermission;
+
+    		if(permissionModule.isUserAccessGranted(inputs.applicationKey, PERMISSION_RESOURCES_UPDATE_FOR_STAGE + deploymentStages[i])){
+    			hasDataSourceModifyPermission =true;
+    		}
+    	}
+    	if(!isDataSourceRetrieveSucceeded){
+    		datasources = null;
+    	}
+    	var hasDataSourceCreatePermission =  jagg.module("permission").isUserAccessGranted(inputs.applicationKey, PERMISSION_DATASOURCE_CREATE);
+    	var hasTenantAdminPermission =  jagg.module("permission").checkUserAuthorization(PERMISSION_TENANT_ADMIN);
+    	var hasConfigureAPIManagerPermission = jagg.module("permission").isUserAccessGranted(inputs.applicationKey, PERMISSION_CONFIGURATION_API_MANAGER);
+        var hasCreateResourcePermissions= hasUILevelResourceCreationPermission(inputs.applicationKey);
+	    var helpTips = jagg.module("help").getHelpTips("resourcesOverview");
+    	return {
+    	    "hasCreateResourcePermissions": hasCreateResourcePermissions,
+    		"hasConfigureDbAdministrationPermission": hasConfigureDbAdministrationPermissions,
+    		"hasConfigureAPIManagerPermission": hasConfigureAPIManagerPermission,
+    		"hasConfigureResourcePermission": hasConfigureResourcePermissions,
+    		"hasDataSourceCreatePermission":hasDataSourceCreatePermission,
+    		"hasDataSourceModifyPermission":hasDataSourceModifyPermission,
+            "hasTenantAdminPermission":hasTenantAdminPermission,
+	        "helpTips":helpTips
+    	};
+    }
+
+
+});
+%>

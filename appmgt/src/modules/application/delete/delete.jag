@@ -1,0 +1,84 @@
+<%
+include("/jagg/constants.jag");
+include("/jagg/config_reader.jag");
+
+var log = new Log("module/application/delete/delete.jag");
+
+var modLifecycle = jagg.module("lifecycle");
+var modManager = jagg.module("manager");
+var carbon = require('carbon');
+var server = carbon.server;
+
+var deleteApplication = function (appKey,userName){
+	var tenantDomain=modManager.getTenantDomain() ;
+	var applicationManagementService;
+	var context=multitenancy.getPrivilegedCarbonContext();
+        var tenantManager= multitenancy.getTenantManager();
+	try{
+	    context.startTenantFlow();
+            context.getThreadLocalCarbonContext().setTenantId(tenantManager.getTenantId(tenantDomain),true);
+            context.getThreadLocalCarbonContext().setUsername(jagg.getUser().split("@")[0]);
+            applicationManagementService =server.osgiService('org.wso2.carbon.appfactory.application.mgt.service.ApplicationManagementService');
+       	    var application = applicationManagementService.getApplication(appKey);
+	    if(application!=null){
+	    	applicationManagementService.deleteApplication(application,userName,tenantDomain);
+            addDeletedAppKeyToApplicationContext(appKey);
+	    }
+	}catch(e){
+	    log.error(e);
+	    throw new Error("Error at deleting application : "+appKey);
+	}finally{
+	   context.endTenantFlow();
+        }
+	log.info("Deleted application "+appKey);
+}
+
+/**
+ * Add {@code appKey} to the deleted app key list of the application context.
+ * Since we are getting user home data from the cache, when application is deleted,
+ * we add the deleted app key to the application context. So when ever we are getting user home info from cache,
+ * first we check the application context for deleted app keys and remove them from the cache and then return the data
+ */
+var addDeletedAppKeyToApplicationContext = function(appKey){
+    var deletedAppKeys = application.get(APP_CTX_DELETED_KEYS);
+    var tenantDomain=modManager.getTenantDomain() ;
+    if(isEmpty(deletedAppKeys)) {
+        deletedAppKeys = {};
+    }
+    if(!deletedAppKeys[tenantDomain]){
+        deletedAppKeys[tenantDomain] = new Array();
+    }
+    deletedAppKeys[tenantDomain].push(appKey);
+    application.put(APP_CTX_DELETED_KEYS,deletedAppKeys);
+};
+
+/**
+ * Remove the app key from deleted app keys list of the application context.
+ * @param appKey app key to be deleted from the deleted app key list
+ */
+var removeDeletedAppKeyFromApplicationContext = function(appKey){
+    var deletedAppKeys = application.get(APP_CTX_DELETED_KEYS);
+    var tenantDomain=modManager.getTenantDomain() ;
+    if(!isEmpty(deletedAppKeys) && deletedAppKeys[tenantDomain]
+            && deletedAppKeys[tenantDomain].length > 0) {
+        var idx = deletedAppKeys[tenantDomain].indexOf(appKey);
+        if (idx != -1) {
+            deletedAppKeys[tenantDomain].splice(idx, 1);
+            application.put(APP_CTX_DELETED_KEYS, deletedAppKeys);
+        }
+    }
+};
+
+/**
+ * Check whether the {@code obj} is empty object({}) or not
+ * @param obj
+ * @returns {boolean}
+ */
+var isEmpty = function(obj){
+    if(!obj){       // if object is null
+        return true;
+    } else {
+        return (Object.getOwnPropertyNames(obj).length === 0);
+    }
+};
+%>
