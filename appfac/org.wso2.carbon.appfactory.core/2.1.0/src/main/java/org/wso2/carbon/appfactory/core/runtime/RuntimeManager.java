@@ -98,9 +98,10 @@ public class RuntimeManager {
 
 			applicationRuntimeBean = new RuntimeBean();
 			applicationRuntimeBean.setRuntimeName(runtimeName);
-			applicationRuntimeBean.setDeployerClassName(properties.getProperty("ClassName"));
+			applicationRuntimeBean.setDeployerClassName(properties.getProperty("DeployerClassName"));
 
-			applicationRuntimeBean.setRepositoryURLPattern(properties.getProperty("RepositoryProvider.URLPattern"));
+			applicationRuntimeBean.setRepositoryURLPattern(
+					properties.getProperty("RepositoryURLPattern"));
 
 			applicationRuntimeBean.setAliasPrefix(properties.getProperty("AliasPrefix"));
 			applicationRuntimeBean.setCartridgeTypePrefix(
