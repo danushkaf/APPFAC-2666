@@ -16,16 +16,7 @@
 
 package org.wso2.carbon.appfactory.deployers.util;
 
-import java.io.File;
 import java.util.Map;
-
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-
-import org.apache.commons.lang.StringUtils;
-import org.wso2.carbon.appfactory.common.AppFactoryException;
-import org.wso2.carbon.appfactory.common.util.AppFactoryUtil;
 
 public class DeployerUtil {
 	
@@ -40,19 +31,6 @@ public class DeployerUtil {
                 return values[0];
             }
         }
-    }
-	
-	public static String[] getParameterValues(Map metadata, String key) {
-        if (metadata.get(key) == null) {
-            return null;
-        }
-        if (metadata.get(key) instanceof String[]) {
-            return (String[]) metadata.get(key);
-        } else if (metadata.get(key) instanceof String) {
-            return new String[]{metadata.get(key).toString()};
-        }
-
-        return null;
     }
 	
 	public static String getParameterValue(Map metadata, String key) {
@@ -70,70 +48,6 @@ public class DeployerUtil {
         }
 
         return null;
-    } 
-	
-	public static String generateTenantJenkinsUrl(String jobName, String tenantDomain, String jenkinsUrl) {
-		//      return jenkinsUrl + File.separator + Constants.TENANT_SPACE + File.separator + tenantDomain +
-		//              Constants.JENKINS_WEBAPPS + "/job/" + jobName + "/buildWithParameters";
-		return jenkinsUrl + File.separator + "t" + File.separator + tenantDomain +
-				"/webapps/jenkins" + "/job/" + jobName + "/buildWithParameters";
-	}
-	
-	public static String getJenkinsHome() throws NamingException {
-        InitialContext ic = new InitialContext();
-
-        // thats everything from the context.xml and from the global configuration
-        Context xmlContext = (Context) ic.lookup("java:comp/env");
-
-        return (String) xmlContext.lookup("JENKINS_HOME");
     }
-	
-	
-	
-	public static String getAppFactoryConfigurationProperty(String path) throws AppFactoryException{
-		String property = AppFactoryUtil.getAppfactoryConfiguration().getFirstProperty(path);
-		return property;
-	}
-    
-    public static String[] getAppFactoryConfigurationProperties(String path) throws AppFactoryException{
-		String[] properties = AppFactoryUtil.getAppfactoryConfiguration().getProperties(path);
-		return properties;
-	}
-    
-    
-
-	public static String getRepositoryProviderProperty(String stage, String propertyName, String appType) 
-    		throws AppFactoryException{
-    	String repoProperty = getAppFactoryConfigurationProperty("ApplicationDeployment.DeploymentStage." + stage + 
-    				".Deployer.ApplicationTypeBean." + appType + ".RepositoryProvider.Property." + propertyName);
-		
-    	if ( StringUtils.isBlank(repoProperty)){
-    	    repoProperty = getAppFactoryConfigurationProperty("ApplicationDeployment.DeploymentStage." + stage + 
-					".Deployer.ApplicationTypeBean.*.RepositoryProvider.Property." + propertyName);
-    	}
-    	
-		return repoProperty;
-	}
-    
-    public static String getDeployerClassName(String stage, String appType) throws AppFactoryException{
-		String className = getAppFactoryConfigurationProperty("ApplicationDeployment.DeploymentStage." + stage + 
-				".Deployer.ApplicationTypeBean." + appType + ".ClassName");
-		
-		if (StringUtils.isBlank(className)){
-		    className = getAppFactoryConfigurationProperty("ApplicationDeployment.DeploymentStage." + stage + 
-		                                       ".Deployer.ApplicationTypeBean.*.ClassName");
-		}
-		
-		return className;
-	}
-    
-    
-    public static String getAdminPasswordForRepository(String repoType) throws AppFactoryException {
-		return getAppFactoryConfigurationProperty("RepositoryProviderConfig."+repoType+".Property.AdminPassword");
-	}
-
-    public static String getAdminUserNameForRepository(String repoType) throws AppFactoryException {
-		return getAppFactoryConfigurationProperty("RepositoryProviderConfig."+repoType+".Property.AdminUserName");
-	}
 
 }

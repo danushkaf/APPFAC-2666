@@ -19,7 +19,7 @@
         <groupId>org.wso2.appfactory</groupId>
         <artifactId>wso2appfactory-parent</artifactId>
         <version>2.1.0</version>
-        <relativePath>../../pom.xml</relativePath>
+        <relativePath>../../../../platform/turing/products/appfactory/2.1.0/modules/pom.xml</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>

@@ -5,13 +5,13 @@ import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.appfactory.common.AppFactoryConfiguration;
 import org.wso2.carbon.appfactory.common.AppFactoryConstants;
 import org.wso2.carbon.appfactory.common.AppFactoryException;
+import org.wso2.carbon.appfactory.common.util.AppFactoryUtil;
 import org.wso2.carbon.appfactory.core.apptype.ApplicationTypeManager;
 import org.wso2.carbon.appfactory.jenkins.build.internal.ServiceContainer;
 import org.wso2.carbon.appfactory.nonbuild.artifact.type.DSSDeployableArtifact;
 import org.wso2.carbon.appfactory.nonbuild.artifact.type.JaggeryDeployableArtifact;
 import org.wso2.carbon.appfactory.nonbuild.artifact.type.PHPDeployableArtifact;
 import org.wso2.carbon.appfactory.nonbuild.artifact.type.UploadedApplicationDeployableArtifact;
-import org.wso2.carbon.appfactory.nonbuild.utility.ApplicationBuildUtility;
 import org.wso2.carbon.appfactory.repository.mgt.RepositoryManager;
 import org.wso2.carbon.appfactory.repository.mgt.RepositoryMgtException;
 import org.wso2.carbon.appfactory.repository.mgt.client.AppfactoryRepositoryClient;
@@ -133,8 +133,10 @@ public class ArtifactGeneratorFactory {
 			AppfactoryRepositoryClient appfactoryGitClient = null;
 
 			appfactoryGitClient = (new RepositoryManager()).getRepositoryProvider("git").getRepositoryClient();
-			appfactoryGitClient.init(ApplicationBuildUtility.getSourceRepositoryProviderProperty("AdminPassword"),
-			                         ApplicationBuildUtility.getSourceRepositoryProviderProperty("AdminUserName"));
+			appfactoryGitClient.init(AppFactoryUtil.getAppfactoryConfiguration().
+					                         getFirstProperty("PAASArtifactStorageRepositoryProvider.AdminPassword"),
+			                         AppFactoryUtil.getAppfactoryConfiguration().
+					                         getFirstProperty("PAASArtifactStorageRepositoryProvider.AdminUserName"));
 
 			RepositoryManager repositoryManager = new RepositoryManager();
 			String appfactoryGitRepoURL =

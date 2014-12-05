@@ -12,6 +12,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.appfactory.common.AppFactoryConstants;
 import org.wso2.carbon.appfactory.common.AppFactoryException;
+import org.wso2.carbon.appfactory.common.util.AppFactoryUtil;
 import org.wso2.carbon.appfactory.deployers.AbstractStratosDeployer;
 import org.wso2.carbon.appfactory.deployers.notify.DeployNotifier;
 import org.wso2.carbon.appfactory.deployers.util.DeployerUtil;
@@ -296,7 +297,8 @@ public class JenkinsArtifactDeployer extends AbstractStratosDeployer {
 
 	@Override
 	protected String getBaseRepoUrl(String stage, String appType) throws AppFactoryException {
-		return Utils.getRepositoryProviderProperty(stage, "BaseURL", appType);
+		return AppFactoryUtil.getAppfactoryConfiguration().
+				getFirstProperty("PAASArtifactStorageRepositoryProvider.BaseURL");
 	}
 
 	@Override
@@ -306,12 +308,14 @@ public class JenkinsArtifactDeployer extends AbstractStratosDeployer {
 
 	@Override
 	protected String getAdminPassword(String stage, String appType) throws AppFactoryException {
-		return Utils.getRepositoryProviderProperty(stage, "AdminPassword", appType);
+		return AppFactoryUtil.getAppfactoryConfiguration().
+				getFirstProperty("PAASArtifactStorageRepositoryProvider.AdminPassword");
 	}
 
 	@Override
 	protected String getAdminUserName(String stage, String appType) throws AppFactoryException {
-		return Utils.getRepositoryProviderProperty(stage, "AdminUserName", appType);
+		return AppFactoryUtil.getAppfactoryConfiguration().
+				getFirstProperty("PAASArtifactStorageRepositoryProvider.AdminUserName");
 	}
 
 	public void deployTaggedArtifact(Map<String, String[]> requestParameters) throws Exception {

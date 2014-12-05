@@ -21,6 +21,7 @@
         <groupId>org.wso2.carbon</groupId>
         <artifactId>carbon-components</artifactId>
         <version>4.2.0</version>
+	<relativePath>../../../../platform/turing/components/pom.xml</relativePath>
     </parent>
 
     <groupId>org.wso2.carbon</groupId>
