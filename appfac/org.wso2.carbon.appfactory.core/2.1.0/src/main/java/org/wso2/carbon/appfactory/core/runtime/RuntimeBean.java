@@ -19,18 +19,14 @@
 package org.wso2.carbon.appfactory.core.runtime;
 
 /**
- * Bean class to store application type data
+ * Bean class to store application runtime data
  */
 public class RuntimeBean {
 
-	private String runtime;
-	private String className;
-	private String endpoint;
-	private String providerClass;
-	private String baseURL;
-	private String urlPattern;
-	private String adminUserName;
-	private String adminPassword;
+	private String runtimeName;
+	private String DeployerClassName;
+	private String repositoryURLPattern;
+
 	private String aliasPrefix;
 	private String cartridgeTypePrefix;
 	private String deploymentPolicy;
@@ -38,73 +34,33 @@ public class RuntimeBean {
     private String repoURL;
     private String dataCartridgeType;
 	private String dataCartridgeAlias;
-	private boolean subscribeOnDeployment;
+	private String subscribeOnDeployment;
 
 	public RuntimeBean(){
 	}
 
-	public String getRuntime() {
-		return runtime;
+	public String getRuntimeName() {
+		return runtimeName;
 	}
 
-	public void setRuntime(String runtime) {
-		this.runtime = runtime;
+	public void setRuntimeName(String runtimeName) {
+		this.runtimeName = runtimeName;
 	}
 
-	public String getClassName() {
-		return className;
+	public String getDeployerClassName() {
+		return DeployerClassName;
 	}
 
-	public void setClassName(String className) {
-		this.className = className;
+	public void setDeployerClassName(String deployerClassName) {
+		DeployerClassName = deployerClassName;
 	}
 
-	public String getEndpoint() {
-		return endpoint;
+	public String getRepositoryURLPattern() {
+		return repositoryURLPattern;
 	}
 
-	public void setEndpoint(String endpoint) {
-		this.endpoint = endpoint;
-	}
-
-	public String getProviderClass() {
-		return providerClass;
-	}
-
-	public void setProviderClass(String providerClass) {
-		this.providerClass = providerClass;
-	}
-
-	public String getBaseURL() {
-		return baseURL;
-	}
-
-	public void setBaseURL(String baseURL) {
-		this.baseURL = baseURL;
-	}
-
-	public String getUrlPattern() {
-		return urlPattern;
-	}
-
-	public void setUrlPattern(String urlPattern) {
-		this.urlPattern = urlPattern;
-	}
-
-	public String getAdminUserName() {
-		return adminUserName;
-	}
-
-	public void setAdminUserName(String adminUserName) {
-		this.adminUserName = adminUserName;
-	}
-
-	public String getAdminPassword() {
-		return adminPassword;
-	}
-
-	public void setAdminPassword(String adminPassword) {
-		this.adminPassword = adminPassword;
+	public void setRepositoryURLPattern(String repositoryURLPattern) {
+		this.repositoryURLPattern = repositoryURLPattern;
 	}
 
 	public String getAliasPrefix() {
@@ -163,11 +119,11 @@ public class RuntimeBean {
 		this.dataCartridgeAlias = dataCartridgeAlias;
 	}
 
-	public boolean isSubscribeOnDeployment() {
+	public String getSubscribeOnDeployment() {
 		return subscribeOnDeployment;
 	}
 
-	public void setSubscribeOnDeployment(boolean subscribeOnDeployment) {
+	public void setSubscribeOnDeployment(String subscribeOnDeployment) {
 		this.subscribeOnDeployment = subscribeOnDeployment;
 	}
 

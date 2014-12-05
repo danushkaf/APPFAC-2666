@@ -98,16 +98,11 @@ public class RuntimeManager {
 		try {
 
 			applicationRuntimeBean = new RuntimeBean();
-			applicationRuntimeBean.setRuntime(runtimeName);
-			applicationRuntimeBean.setClassName(properties.getProperty("ClassName"));
-			applicationRuntimeBean.setEndpoint(properties.getProperty("Endpoint"));
-			applicationRuntimeBean.setProviderClass(
-					properties.getProperty("RepositoryProvider.ProviderClass"));
-			applicationRuntimeBean.setBaseURL(properties.getProperty("RepositoryProvider.BaseURL"));
-			applicationRuntimeBean.setUrlPattern(properties.getProperty("RepositoryProvider.URLPattern"));
-			applicationRuntimeBean.setAdminUserName(
-					properties.getProperty("RepositoryProvider.AdminUserName"));
-			applicationRuntimeBean.setAdminPassword(properties.getProperty("RepositoryProvider.AdminPassword"));
+			applicationRuntimeBean.setRuntimeName(runtimeName);
+			applicationRuntimeBean.setDeployerClassName(properties.getProperty("ClassName"));
+
+			applicationRuntimeBean.setRepositoryURLPattern(properties.getProperty("RepositoryProvider.URLPattern"));
+
 			applicationRuntimeBean.setAliasPrefix(properties.getProperty("AliasPrefix"));
 			applicationRuntimeBean.setCartridgeTypePrefix(
 					properties.getProperty("CartridgeTypePrefix"));
@@ -124,7 +119,7 @@ public class RuntimeManager {
 				applicationRuntimeBean.setDataCartridgeAlias(properties.getProperty("DataCartridgeAlias"));
 			}
 			if(properties.get("SubscribeOnDeployment") != null){
-				applicationRuntimeBean.setSubscribeOnDeployment(Boolean.parseBoolean(properties.getProperty("SubscribeOnDeployment")));
+				applicationRuntimeBean.setSubscribeOnDeployment(properties.getProperty("SubscribeOnDeployment"));
 			}
 
 
