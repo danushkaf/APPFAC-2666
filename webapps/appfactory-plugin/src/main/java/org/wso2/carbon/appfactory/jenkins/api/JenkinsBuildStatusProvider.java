@@ -1,34 +1,26 @@
 package org.wso2.carbon.appfactory.jenkins.api;
 
-import hudson.model.Hudson;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.apache.axiom.om.OMElement;
 import org.apache.axiom.om.impl.builder.StAXOMBuilder;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.NameValuePair;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.appfactory.common.AppFactoryException;
+import org.wso2.carbon.appfactory.common.util.AppFactoryUtil;
 import org.wso2.carbon.appfactory.deployers.build.api.BuildStatusProvider;
 import org.wso2.carbon.appfactory.deployers.build.api.BuildStatusProviderException;
-import org.wso2.carbon.appfactory.jenkins.AppfactoryPluginManager;
 import org.wso2.carbon.appfactory.jenkins.Constants;
 import org.wso2.carbon.appfactory.jenkins.artifact.storage.Utils;
 import org.wso2.carbon.appfactory.jenkins.util.JenkinsUtility;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
 import javax.xml.namespace.QName;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 public class JenkinsBuildStatusProvider implements BuildStatusProvider {
 
@@ -41,7 +33,8 @@ public class JenkinsBuildStatusProvider implements BuildStatusProvider {
 		String jobName = JenkinsUtility.getJobName(applicationId, version,userName,repoFrom);
 		String url = null;
 		try {
-			url = Utils.getAppFactoryConfigurationProperty("ContinuousIntegrationProvider.jenkins.Property.BaseURL");
+			url = AppFactoryUtil.getAppfactoryConfiguration().getFirstProperty(
+					"ContinuousIntegrationProvider.jenkins.Property.BaseURL");
 		} catch (AppFactoryException e) {
 			String msg = "Error occuered while calling the API";
 			throw new BuildStatusProviderException(msg);
@@ -58,10 +51,11 @@ public class JenkinsBuildStatusProvider implements BuildStatusProvider {
 		try {
 			getHttpClient().getState()
 			.setCredentials(AuthScope.ANY,
-					new UsernamePasswordCredentials(Utils.
-							getAppFactoryConfigurationProperty(Constants.JENKINS_ADMIN_USERNAME_PATH), 
-							Utils.getAppFactoryConfigurationProperty(Constants.
-									JENKINS_ADMIN_PASSWORD_PATH)));
+					new UsernamePasswordCredentials(
+							AppFactoryUtil.getAppfactoryConfiguration().getFirstProperty(
+									Constants.JENKINS_ADMIN_USERNAME_PATH),
+					        AppFactoryUtil.getAppfactoryConfiguration().getFirstProperty(
+							        Constants.JENKINS_ADMIN_PASSWORD_PATH)));
 		} catch (AppFactoryException e) {
 			String msg = "Error occuered while calling the API";
 			throw new BuildStatusProviderException(msg);
@@ -132,7 +126,8 @@ public class JenkinsBuildStatusProvider implements BuildStatusProvider {
     	
         String buildUrl ="";
         try {
-            buildUrl = Utils.getAppFactoryConfigurationProperty("ContinuousIntegrationProvider.jenkins.Property.BaseURL");
+            buildUrl = AppFactoryUtil.getAppfactoryConfiguration().getFirstProperty(
+		            "ContinuousIntegrationProvider.jenkins.Property.BaseURL");
         } catch (AppFactoryException e) {
             String msg = "Error occuered while calling the API";
             throw new BuildStatusProviderException(msg);
@@ -144,10 +139,11 @@ public class JenkinsBuildStatusProvider implements BuildStatusProvider {
         try {
             getHttpClient().getState()
                     .setCredentials(AuthScope.ANY,
-                            new UsernamePasswordCredentials(Utils.
-                                    getAppFactoryConfigurationProperty(Constants.JENKINS_ADMIN_USERNAME_PATH),
-                                    Utils.getAppFactoryConfigurationProperty(Constants.
-                                            JENKINS_ADMIN_PASSWORD_PATH)));
+                            new UsernamePasswordCredentials(
+		                            AppFactoryUtil.getAppfactoryConfiguration().getFirstProperty(
+				                            Constants.JENKINS_ADMIN_USERNAME_PATH),
+		                            AppFactoryUtil.getAppfactoryConfiguration().getFirstProperty(
+				                            Constants.JENKINS_ADMIN_PASSWORD_PATH)));
         } catch (AppFactoryException e) {
             String msg = "Error occuered while calling the API";
             throw new BuildStatusProviderException(msg);

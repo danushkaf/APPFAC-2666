@@ -23,8 +23,8 @@ import org.wso2.carbon.appfactory.jenkins.AppfactoryPluginManager;
 import org.wso2.carbon.appfactory.jenkins.api.JenkinsBuildStatusProvider;
 import org.wso2.carbon.appfactory.jenkins.artifact.storage.Utils;
 import org.wso2.carbon.appfactory.jenkins.util.JenkinsUtility;
+import org.wso2.carbon.h2.osgi.utils.CarbonUtils;
 
-import javax.naming.NamingException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -252,28 +252,20 @@ public class JenkinsArtifactDeployer extends AbstractStratosDeployer {
 
 	@Override
 	public String getSuccessfulArtifactTempStoragePath(String applicationId, String applicationVersion,
-	                                                   String artifactType, String stage, String tenantDomain)
-	                                                                                                          throws AppFactoryException {
-		String path = null;
-		try {
-			String jenkinsHome = DeployerUtil.getJenkinsHome();
-			String jobName = JenkinsUtility.getJobName(applicationId, applicationVersion);
-			path = jenkinsHome + File.separator + "jobs" + File.separator + jobName + File.separator + "lastSuccessful";
-
-		} catch (NamingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	                                                    String artifactType, String stage, String tenantDomain)
+														throws AppFactoryException {
+		String jenkinsHome = CarbonUtils.getCarbonHome();
+		String jobName = JenkinsUtility.getJobName(applicationId, applicationVersion);
+		String path = jenkinsHome + File.separator + "jobs" + File.separator + jobName +
+		              File.separator + "lastSuccessful";
 		return path;
 	}
 
 	@Override
 	public String getArtifactStoragePath(String applicationId, String applicationVersion, String artifactType,
 	                                     String stage, String tenantDomain) throws AppFactoryException {
-
 		String jobName = JenkinsUtility.getJobName(applicationId, applicationVersion);
-		String path =
-		              getStoragePath() + File.separator + "PROMOTED" + File.separator + jobName + File.separator +
+		String path = getStoragePath() + File.separator + "PROMOTED" + File.separator + jobName + File.separator +
 		                      "lastSuccessful";
 		return path;
 	}
