@@ -108,7 +108,7 @@ public class RuntimeManager {
 			applicationRuntimeBean.setDeployerClassName(
 					properties.getProperty(AppFactoryConstants.RUNTIME_DEPLOYER_CLASSNAME));
 
-			applicationRuntimeBean.setRepositoryURLPattern(
+			applicationRuntimeBean.setPaasRepositoryURLPattern(
 					properties.getProperty(AppFactoryConstants.RUNTIME_REPOSITORY_URL_PATTERN));
 
 			applicationRuntimeBean.setAliasPrefix(

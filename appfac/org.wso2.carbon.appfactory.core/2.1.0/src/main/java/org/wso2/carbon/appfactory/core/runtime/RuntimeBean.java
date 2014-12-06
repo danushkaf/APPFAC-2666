@@ -25,7 +25,7 @@ public class RuntimeBean {
 
 	private String runtimeName;
 	private String DeployerClassName;
-	private String repositoryURLPattern;
+	private String paasRepositoryURLPattern;
 
 	private String aliasPrefix;
 	private String cartridgeTypePrefix;
@@ -55,12 +55,12 @@ public class RuntimeBean {
 		DeployerClassName = deployerClassName;
 	}
 
-	public String getRepositoryURLPattern() {
-		return repositoryURLPattern;
+	public String getPaasRepositoryURLPattern() {
+		return paasRepositoryURLPattern;
 	}
 
-	public void setRepositoryURLPattern(String repositoryURLPattern) {
-		this.repositoryURLPattern = repositoryURLPattern;
+	public void setPaasRepositoryURLPattern(String paasRepositoryURLPattern) {
+		this.paasRepositoryURLPattern = paasRepositoryURLPattern;
 	}
 
 	public String getAliasPrefix() {

@@ -8,15 +8,11 @@ import org.wso2.carbon.appfactory.common.AppFactoryConstants;
 import org.wso2.carbon.appfactory.common.AppFactoryException;
 import org.wso2.carbon.appfactory.deployers.clients.AppfactoryRepositoryClient;
 import org.wso2.carbon.appfactory.deployers.util.DeployerUtil;
-import org.wso2.carbon.appfactory.common.util.AppFactoryUtil;
 import org.wso2.carbon.appfactory.s4.integration.DeployerInfo;
 import org.wso2.carbon.appfactory.s4.integration.DeployerInfoBuilder;
 
-import javax.activation.DataHandler;
-import javax.activation.FileDataSource;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Map;
 
@@ -39,27 +35,10 @@ public abstract class AbstractStratosDeployer extends AbstractDeployer {
                 + "-" + tenantDomain;
         synchronized (condition.intern()) {
 
-            if (AppFactoryConstants.APPLICATION_TYPE_ESB.equals(artifactType)) {
-                ExtendedUploadItem[] uploadItems = new ExtendedUploadItem[artifactsToDeploy.length];
-                for (int i = 0; i < uploadItems.length; i++) {
-                    File artifact = artifactsToDeploy[i];
-                    DataHandler dataHandler = new DataHandler(
-                            new FileDataSource(artifact));
-
-                    ExtendedUploadItem dataItem = new ExtendedUploadItem(
-                            dataHandler, artifact);
-                    dataItem.setFileName(artifact.getName());
-                    uploadItems[i] = dataItem;
-                }
-                uploadESBApp(uploadItems, parameters);
-            } else {
-                File artifactToDeploy = artifactsToDeploy[0];
-                String fileName = artifactToDeploy.getName();
-                // DataHandler dataHandler = new DataHandler(new
-                // FileDataSource(artifactToDeploy));
-                addToGitRepo(fileName, artifactToDeploy, parameters,
-                        artifactType, serverDeploymentPath, null);
-            }
+            File artifactToDeploy = artifactsToDeploy[0];
+            String fileName = artifactToDeploy.getName();
+            addToGitRepo(fileName, artifactToDeploy, parameters,
+                         artifactType, serverDeploymentPath, null);
 
             if (notify) {
                 postDeploymentNoifier("", applicatonId, version, artifactType,
@@ -320,24 +299,16 @@ public abstract class AbstractStratosDeployer extends AbstractDeployer {
     protected String generateRepoUrl(String applicationId, Map metadata,
                                      int tenantId, String appType, boolean subscribeOnDeployment)
             throws AppFactoryException {
-        String stage = DeployerUtil.getParameterValue(metadata,
-                AppFactoryConstants.DEPLOY_STAGE);
+        String paasRepositoryURLPattern = DeployerUtil.getParameter(metadata,
+                                                                    AppFactoryConstants.PAAS_REPOSITORY_URL_PATTERN);
+        String stage = DeployerUtil.getParameterValue(metadata,AppFactoryConstants.DEPLOY_STAGE);
         String baseUrl = getBaseRepoUrl(stage, appType);
-        String template = getBaseRepoUrlPattern(stage,
-                                                appType); // Have to change, The problem is from the
-                                                // meta data bag we won't get the repo url pattern
-                                                // for a particular apptype as when we pushing that
-                                                // we just pushing it as a repoURLPattern without
-                                                // linking to app type.Hence we may have to put that
-                                                // by linking to each apptype in RestBasedJenkinsCIConnector.java
         String gitRepoUrl = "";
         if (subscribeOnDeployment) {
-            gitRepoUrl = baseUrl + "git/" + template + File.separator
-                    + tenantId + File.separator + applicationId
-                    + tenantDomain.replace(".", "dot") + ".git";
+            gitRepoUrl = baseUrl + "git/" + paasRepositoryURLPattern + File.separator
+                    + tenantId + File.separator + applicationId + tenantDomain.replace(".", "dot") + ".git";
         } else {
-            gitRepoUrl = baseUrl + "git/" + template + File.separator
-                    + tenantId + ".git";
+            gitRepoUrl = baseUrl + "git/" + paasRepositoryURLPattern + File.separator + tenantId + ".git";
         }
         gitRepoUrl = gitRepoUrl.replace("{@stage}", stage);
         if (log.isDebugEnabled()) {
@@ -353,24 +324,7 @@ public abstract class AbstractStratosDeployer extends AbstractDeployer {
         // Templates.
     }
 
-    public String getPromotedDestinationPathForApplication(String filepath,
-                                                           String artifactType) {
-
-        if (AppFactoryConstants.APPLICATION_TYPE_ESB.equals(artifactType)) {
-            if (filepath.contains(AppFactoryConstants.ESB_ARTIFACT_PREFIX)) {
-                String esbRelativeFilePath = filepath
-                        .split(AppFactoryConstants.ESB_ARTIFACT_PREFIX)[1];
-                return AppFactoryConstants.ESB_ARTIFACT_PREFIX + File.separator
-                        + esbRelativeFilePath;
-            }
-        }
-        return "";
-    }
-
     protected abstract String getBaseRepoUrl(String stage, String appType)
-            throws AppFactoryException;
-
-    protected abstract String getBaseRepoUrlPattern(String stage, String appType)
             throws AppFactoryException;
 
     protected abstract String getAdminUserName(String stage, String appType)
@@ -378,8 +332,5 @@ public abstract class AbstractStratosDeployer extends AbstractDeployer {
 
     protected abstract String getAdminPassword(String stage, String appType)
             throws AppFactoryException;
-
-    // protected abstract String getServerDeploymentPaths(String appType) throws
-    // AppFactoryException;
 
 }

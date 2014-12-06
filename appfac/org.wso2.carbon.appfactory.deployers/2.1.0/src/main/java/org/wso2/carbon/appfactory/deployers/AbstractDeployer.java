@@ -229,10 +229,7 @@ public abstract class AbstractDeployer implements Deployer {
 				artifactType, extension);
 		for (File lastSucessFile : lastSucessFiles) {
 			File lastSuccessArtifactPath = lastSucessFile;
-			String promotedDestDirPath = destDir.getAbsolutePath()
-					+ File.separator
-					+ getPromotedDestinationPathForApplication(
-							lastSucessFile.getParent(), artifactType);
+			String promotedDestDirPath = destDir.getAbsolutePath();
 
 			File promotedDestDir = new File(promotedDestDirPath);
 			if (!promotedDestDir.exists()) {
@@ -312,9 +309,6 @@ public abstract class AbstractDeployer implements Deployer {
 	public abstract String getArtifactStoragePath(String applicationId,
 			String applicationVersion, String artifactType, String stage,
 			String tenantDomain) throws AppFactoryException;
-
-	public abstract String getPromotedDestinationPathForApplication(
-			String filepath, String artifactType);
 
 	public abstract void postDeploymentNoifier(String message,
 			String applicationId, String applicationVersion,

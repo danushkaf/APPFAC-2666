@@ -72,7 +72,7 @@ public class AppFactoryConstants {
 	public static final String PASS_ARTIFACT_STORAGE_REPOSITORY_PROVIDER_BASE_URL="PAASArtifactStorageRepositoryProvider.BaseURL";
 	public static final String PASS_ARTIFACT_STORAGE_REPOSITORY_PROVIDER_PROVIDER_CLASS="PAASArtifactStorageRepositoryProvider.ProviderClass";
 
-	public static final String RUNTIMES_NAME_FOR_APPTYPE="runtimesNameForApptype";
+	public static final String RUNTIME_NAME_FOR_APPTYPE ="runtimesNameForApptype";
 
     /**
      * Defining archetype related constants
@@ -172,10 +172,6 @@ public class AppFactoryConstants {
 	public static final String BRANCH = "branches";
 	public static final String TAG = "tags";
 
-	public static final String FILE_TYPE_CAR = "car";
-	public static final String FILE_TYPE_JAXWS = "jaxws";
-	public static final String FILE_TYPE_JAXRS = "jaxrs";
-	public static final String FILE_TYPE_WAR = "war";
 	public static final String FILE_TYPE_JAGGERY = "jaggery";
 	public static final String FILE_TYPE_DBS = "dbs";
 	public static final String FILE_TYPE_BPEL = "bpel";
@@ -192,28 +188,13 @@ public class AppFactoryConstants {
 	public static final String SCM_READ_WRITE_PERMISSION = "RepositoryProviderConfig.%s.Property.ReadWritePermission";
 	public static final String REPO_ACCESSABILITY = "EnablePerDeveloperRepos";
 
-	/**
-	 * Defines the property name for maven archetype generation parameters
-	 */
-	public static final String CAPP_MAVEN_ARCHETYPE_PROP_NAME = "MavenArchetype.CApp.Properties";
-	public static final String WEBAPP_MAVEN_ARCHETYPE_PROP_NAME = "MavenArchetype.WebApp.Properties";
-	public static final String JAX_WEBAPP_MAVEN_ARCHETYPE_PROP_NAME = "MavenArchetype.JAXWS.Properties";
-	public static final String JAX_RS_WEBAPP_MAVEN_ARCHETYPE_PROP_NAME = "MavenArchetype.JAXRS.Properties";
-	public static final String JAGGERY_APP_MAVEN_ARCHETYPE_PROP_NAME = "MavenArchetype.Jaggery.Properties";
-	public static final String DBS_APP_MAVEN_ARCHETYPE_PROP_NAME = "MavenArchetype.DBS.Properties";
-	public static final String ESB_APP_MAVEN_ARCHETYPE_PROP_NAME = "MavenArchetype.ESB.Properties";
-	public static final String BPEL_MAVEN_ARCHETYPE_PROP_NAME = "MavenArchetype.BPEL.Properties";
-	public static final String PHP_MAVEN_ARCHETYPE_PROP_NAME = "MavenArchetype.php.Properties";
-	public static final String PREFERRED_REPOSITORY_TYPE = "RepositoryType";
 
 	public static final String SECURE_VAULT_NS = "http://org.wso2.securevault/configuration";
 	public static final String SECRET_ALIAS_ATTR_NAME = "secretAlias";
-	public static final String REGISTRATION_LINK = "RegistrationLink";
 
 	/**
 	 * External system names
 	 */
-	public static final String REDMINE = "redmine";
 	public static final String JENKINS = "jenkins";
 	public static final String DENY = "deny:";
 	public static final String TENANT_ROLES_DEFAULT_USER_ROLE = "TenantRoles.DefaultUserRole";
@@ -240,14 +221,8 @@ public class AppFactoryConstants {
 	public static final String RXT_KEY_APPINFO_PRODUCTION_VERSION = "application_productionVersions";
 	public static final String RXT_KEY_APPINFO_BRANCHCOUNT = "application_branchcount";
 
-	public static String[] JENKINS_MVN_PROJECT_TYPE = { FILE_TYPE_WAR,
-			FILE_TYPE_CAR, FILE_TYPE_JAXRS, FILE_TYPE_JAXWS, FILE_TYPE_JAGGERY,
-			FILE_TYPE_BPEL };
 	public static final String CONSUME = "consume";
 	public static final String INVOKE_PERMISSION = "/permission/admin/appfactory/realm";
-
-	public static String[] JENKINS_FREESTYLE_PROJECT_TYPE = { FILE_TYPE_DBS,
-			FILE_TYPE_PHP, FILE_TYPE_ESB };
 
 	// constants added for Deployers
 	public static final String APPLICATION_TYPE_WAR = "war";
@@ -388,7 +363,7 @@ public class AppFactoryConstants {
 	public static final String DOT = ".";
     public static final String DOT_WORD = "dot";
 	public static final String MINUS = "-";
-	public static final String EMPTY_STRING="";
+	public static final String PAAS_REPOSITORY_URL_PATTERN = "paasRepositoryURLPattern";
 	public static final String COMMA=",";
 
 	/**

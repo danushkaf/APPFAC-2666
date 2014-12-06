@@ -34,6 +34,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.appfactory.common.AppFactoryConstants;
 import org.wso2.carbon.appfactory.common.AppFactoryException;
+import org.wso2.carbon.appfactory.core.apptype.ApplicationTypeBean;
 import org.wso2.carbon.appfactory.core.apptype.ApplicationTypeManager;
 import org.wso2.carbon.appfactory.core.build.DefaultBuildDriverListener;
 import org.wso2.carbon.appfactory.core.dto.Statistic;
@@ -1116,8 +1117,7 @@ public class RestBasedJenkinsCIConnector {
 	 *            server Urls that we need to deploy the artifact into
 	 * @throws AppFactoryException
 	 */
-	public void deployLatestSuccessArtifact(String jobName,
-			String artifactType, String stage, String tenantDomain,
+	public void deployLatestSuccessArtifact(String jobName, String artifactType, String stage, String tenantDomain,
 			String userName, String deployAction) throws AppFactoryException {
 		String deployLatestSuccessArtifactUrl = "/plugin/appfactory-plugin/deployLatestSuccessArtifact";
 
@@ -1126,61 +1126,52 @@ public class RestBasedJenkinsCIConnector {
 		try {
 			List<NameValuePair> parameters = new ArrayList<NameValuePair>();
 			parameters.add(new NameValuePair("artifactType", artifactType));
+			ApplicationTypeBean applicationTypeBean = ApplicationTypeManager.getInstance()
+			                                                                .getApplicationTypeBean(artifactType);
+			String runtimesNameForApptype = ApplicationTypeManager.getInstance().getApplicationTypeBean(artifactType)
+			                                                      .getRuntimes()[0];
+			RuntimeBean runtimeBean = RuntimeManager.getInstance().getRuntimeBean(runtimesNameForApptype);
+			parameters.add(new NameValuePair(AppFactoryConstants.RUNTIME_NAME_FOR_APPTYPE,runtimesNameForApptype));
 
-			String runtimesNameForApptype =
-					ApplicationTypeManager.getInstance().getApplicationTypeBean(artifactType)
-					                      .getRuntimes()[AppFactoryConstants.ZERO];
-					parameters.add(new NameValuePair(AppFactoryConstants.RUNTIMES_NAME_FOR_APPTYPE,runtimesNameForApptype));
-				RuntimeBean runtimeBean =
-						RuntimeManager.getInstance()
-						              .getRuntimeBean(runtimesNameForApptype);
-				if (runtimeBean!=null) {
-					parameters.add(new NameValuePair(AppFactoryConstants.RUNTIME_ALIAS_PREFIX,
-					                                 runtimeBean.getAliasPrefix() +
-					                                 AppFactoryConstants.EMPTY_STRING +
-					                                 stage));
-					parameters.add(new NameValuePair(
-							AppFactoryConstants.RUNTIME_CARTRIDGE_TYPE_PREFIX,
-							runtimeBean.getCartridgeTypePrefix() +
-							AppFactoryConstants.EMPTY_STRING + stage));
-					parameters
-							.add(new NameValuePair(AppFactoryConstants.RUNTIME_DEPLOYMENT_POLICY,
-							                       runtimeBean.getDeploymentPolicy()));
-					parameters.add(new NameValuePair(AppFactoryConstants.RUNTIME_AUTOSCALE_POLICY,
-					                                 runtimeBean.getAutoscalePolicy()));
-					parameters.add(new NameValuePair(AppFactoryConstants.RUNTIME_REPO_URL,
-					                                 runtimeBean.getRepoURL()));
-					parameters
-							.add(new NameValuePair(AppFactoryConstants.RUNTIME_DATA_CARTRIDGE_TYPE,
-							                       runtimeBean.getDataCartridgeType()));
-					parameters
-							.add(new NameValuePair(AppFactoryConstants.RUNTIME_DATA_CARTRIDGE_ALIAS,
-							                       runtimeBean.getDataCartridgeAlias()));
-					parameters.add(new NameValuePair(
-							AppFactoryConstants.RUNTIME_SUBSCRIBE_ON_DEPLOYMENT,
-							runtimeBean.getSubscribeOnDeployment()));
-				}
-
-			Object serverDeploymentPaths = ApplicationTypeManager.getInstance()
-					.getApplicationTypeBean(artifactType)
-					.getServerDeploymentPath();
-
-			if (serverDeploymentPaths != null) {
-				parameters.add(new NameValuePair(
-						AppFactoryConstants.SERVER_DEPLOYMENT_PATHS,
-						serverDeploymentPaths.toString()));
+			if(StringUtils.isEmpty(runtimesNameForApptype)){
+				//handle null in apptype deployer
 			}
 
+			if (applicationTypeBean == null) {
+				//handle null pointer
+				//throw
+			}
+			if (runtimeBean == null) {
+				//handle null pointer
+				//throw
+			}
+
+			parameters.add(new NameValuePair(AppFactoryConstants.RUNTIME_NAME_FOR_APPTYPE,runtimesNameForApptype));
+			parameters.add(new NameValuePair(AppFactoryConstants.RUNTIME_ALIAS_PREFIX,
+			                                 runtimeBean.getAliasPrefix() + stage));
+			parameters.add(new NameValuePair(AppFactoryConstants.RUNTIME_CARTRIDGE_TYPE_PREFIX,
+			                                 runtimeBean.getCartridgeTypePrefix() + stage));
+			parameters.add(new NameValuePair(AppFactoryConstants.PAAS_REPOSITORY_URL_PATTERN,
+			                                 runtimeBean.getPaasRepositoryURLPattern()));
+			parameters.add(new NameValuePair(AppFactoryConstants.RUNTIME_DEPLOYMENT_POLICY,
+			                                 runtimeBean.getDeploymentPolicy()));
+			parameters.add(new NameValuePair(AppFactoryConstants.RUNTIME_AUTOSCALE_POLICY,
+			                                 runtimeBean.getAutoscalePolicy()));
+			parameters.add(new NameValuePair(AppFactoryConstants.RUNTIME_REPO_URL,
+			                                 runtimeBean.getRepoURL()));
+			parameters.add(new NameValuePair(AppFactoryConstants.RUNTIME_DATA_CARTRIDGE_TYPE,
+			                                 runtimeBean.getDataCartridgeType()));
+			parameters.add(new NameValuePair(AppFactoryConstants.RUNTIME_DATA_CARTRIDGE_ALIAS,
+			                                 runtimeBean.getDataCartridgeAlias()));
+			parameters.add(new NameValuePair(AppFactoryConstants.RUNTIME_SUBSCRIBE_ON_DEPLOYMENT,
+			                                 runtimeBean.getSubscribeOnDeployment()));
+			parameters.add(new NameValuePair(AppFactoryConstants.SERVER_DEPLOYMENT_PATHS,
+			                                 applicationTypeBean.getServerDeploymentPath()));
 			parameters.add(new NameValuePair("jobName", jobName));
 			parameters.add(new NameValuePair("deployStage", stage));
 			parameters.add(new NameValuePair("deployAction", deployAction));
-			parameters.add(new NameValuePair("deployerType",
-					ApplicationTypeManager.getInstance()
-							.getApplicationTypeBean(artifactType)
-							.getProperty("DeployerType").toString()));
 			parameters.add(new NameValuePair(AppFactoryConstants.APPLICATION_EXTENSION,
-			                                 ApplicationTypeManager.getInstance()
-			                                 .getApplicationTypeBean(artifactType).getExtension()));
+			                                 applicationTypeBean.getExtension()));
 
 			String tenantUserName = userName + "@" + tenantDomain;
 			parameters.add(new NameValuePair("tenantUserName", tenantUserName));
@@ -1228,56 +1219,46 @@ public class RestBasedJenkinsCIConnector {
 		parameters.add(new NameValuePair("jobName", jobName));
 		parameters.add(new NameValuePair("artifactType", artifactType));
 
-		String[] runtimeNameForApptype =
-				ApplicationTypeManager.getInstance().getApplicationTypeBean(artifactType)
-				                      .getRuntimes();
-		for (int runtimeCount = AppFactoryConstants.ZERO;
-		     runtimeCount < runtimeNameForApptype.length; runtimeCount++) {
-			RuntimeBean runtimeBean = RuntimeManager.getInstance().getRuntimeBean(
-					runtimeNameForApptype[runtimeCount]);
-			if (!(runtimeNameForApptype.equals(AppFactoryConstants.EMPTY_STRING))) {
-				parameters.add(new NameValuePair(AppFactoryConstants.RUNTIME_ALIAS_PREFIX,
-				                                 runtimeBean.getAliasPrefix() +
-				                                 AppFactoryConstants.EMPTY_STRING +
-				                                 stage));
-				parameters.add(new NameValuePair(AppFactoryConstants.RUNTIME_CARTRIDGE_TYPE_PREFIX,
-				                                 runtimeBean.getCartridgeTypePrefix() +
-				                                 AppFactoryConstants.EMPTY_STRING + stage));
-				parameters
-						.add(new NameValuePair(AppFactoryConstants.RUNTIME_DEPLOYMENT_POLICY,
-						                       runtimeBean.getDeploymentPolicy()));
-				parameters.add(new NameValuePair(AppFactoryConstants.RUNTIME_AUTOSCALE_POLICY,
-				                                 runtimeBean.getAutoscalePolicy()));
-				parameters.add(new NameValuePair(AppFactoryConstants.RUNTIME_REPO_URL,
-				                                 runtimeBean.getRepoURL()));
-				parameters.add(new NameValuePair(AppFactoryConstants.RUNTIME_DATA_CARTRIDGE_TYPE,
-				                                 runtimeBean.getDataCartridgeType()));
-				parameters.add(new NameValuePair(AppFactoryConstants.RUNTIME_DATA_CARTRIDGE_ALIAS,
-				                                 runtimeBean.getDataCartridgeAlias()));
-				parameters
-						.add(new NameValuePair(AppFactoryConstants.RUNTIME_SUBSCRIBE_ON_DEPLOYMENT,
-						                       runtimeBean.getSubscribeOnDeployment()));
-			}
+		ApplicationTypeBean applicationTypeBean =
+				ApplicationTypeManager.getInstance().getApplicationTypeBean(artifactType);
+		String runtimesNameForApptype = applicationTypeBean.getRuntimes()[0];
+		RuntimeBean runtimeBean = RuntimeManager.getInstance().getRuntimeBean(runtimesNameForApptype);
+
+		if(StringUtils.isEmpty(runtimesNameForApptype)){
+			//handle null in apptype deployer
 		}
-		parameters.add(new NameValuePair("deployerType",
-                ApplicationTypeManager.getInstance()
-                        .getApplicationTypeBean(artifactType)
-                        .getProperty("DeployerType").toString()));
+
+		if (applicationTypeBean == null) {
+			//handle null pointer
+			//throw
+		}
+		if (runtimeBean == null) {
+			//handle null pointer
+			//throw
+		}
+
+		parameters.add(new NameValuePair(AppFactoryConstants.RUNTIME_NAME_FOR_APPTYPE,runtimesNameForApptype));
+		parameters.add(new NameValuePair(AppFactoryConstants.RUNTIME_ALIAS_PREFIX,
+		                                 runtimeBean.getAliasPrefix() + stage));
+		parameters.add(new NameValuePair(AppFactoryConstants.RUNTIME_CARTRIDGE_TYPE_PREFIX,
+		                                 runtimeBean.getCartridgeTypePrefix() + stage));
+		parameters.add(new NameValuePair(AppFactoryConstants.PAAS_REPOSITORY_URL_PATTERN,
+		                                 runtimeBean.getPaasRepositoryURLPattern()));
+		parameters.add(new NameValuePair(AppFactoryConstants.RUNTIME_DEPLOYMENT_POLICY,
+		                                 runtimeBean.getDeploymentPolicy()));
+		parameters.add(new NameValuePair(AppFactoryConstants.RUNTIME_AUTOSCALE_POLICY,
+		                                 runtimeBean.getAutoscalePolicy()));
+		parameters.add(new NameValuePair(AppFactoryConstants.RUNTIME_REPO_URL,
+		                                 runtimeBean.getRepoURL()));
+		parameters.add(new NameValuePair(AppFactoryConstants.RUNTIME_DATA_CARTRIDGE_TYPE,
+		                                 runtimeBean.getDataCartridgeType()));
+		parameters.add(new NameValuePair(AppFactoryConstants.RUNTIME_DATA_CARTRIDGE_ALIAS,
+		                                 runtimeBean.getDataCartridgeAlias()));
+		parameters.add(new NameValuePair(AppFactoryConstants.RUNTIME_SUBSCRIBE_ON_DEPLOYMENT,
+		                                 runtimeBean.getSubscribeOnDeployment()));
 		parameters.add(new NameValuePair(AppFactoryConstants.APPLICATION_EXTENSION,
-		                                 ApplicationTypeManager.getInstance()
-		                                 .getApplicationTypeBean(artifactType).getExtension()));
-
-		Object serverDeploymentPaths = ApplicationTypeManager.getInstance()
-				.getApplicationTypeBean(artifactType).getServerDeploymentPath();
-
-		if (serverDeploymentPaths != null) {
-			parameters.add(new NameValuePair(
-					AppFactoryConstants.SERVER_DEPLOYMENT_PATHS,
-					serverDeploymentPaths.toString()));
-		}
-
+		                                 applicationTypeBean.getServerDeploymentPath()));
 		parameters.add(new NameValuePair("deployStage", stage));
-
 		String tenantUserName = userName + "@" + tenantDomain;
 		parameters.add(new NameValuePair("tenantUserName", tenantUserName));
 

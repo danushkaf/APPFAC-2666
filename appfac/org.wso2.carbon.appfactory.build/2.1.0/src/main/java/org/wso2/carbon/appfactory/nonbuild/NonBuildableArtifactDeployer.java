@@ -76,7 +76,7 @@ public class NonBuildableArtifactDeployer extends AbstractStratosDeployer {
 	@Override
 	protected String getBaseRepoUrlPattern(String stage, String appType) throws AppFactoryException {
 		String runtime = ApplicationTypeManager.getInstance().getApplicationTypeBean(appType).getRuntimes()[0];
-		return RuntimeManager.getInstance().getRuntimeBean(runtime).getRepositoryURLPattern();
+		return RuntimeManager.getInstance().getRuntimeBean(runtime).getPaasRepositoryURLPattern();
 	}
 
     /**
