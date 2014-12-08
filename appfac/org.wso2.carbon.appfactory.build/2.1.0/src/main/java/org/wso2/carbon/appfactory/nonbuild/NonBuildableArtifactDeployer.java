@@ -5,9 +5,7 @@ import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.appfactory.common.AppFactoryConstants;
 import org.wso2.carbon.appfactory.common.AppFactoryException;
 import org.wso2.carbon.appfactory.common.util.AppFactoryUtil;
-import org.wso2.carbon.appfactory.core.apptype.ApplicationTypeManager;
 import org.wso2.carbon.appfactory.core.deploy.ApplicationDeployer;
-import org.wso2.carbon.appfactory.core.runtime.RuntimeManager;
 import org.wso2.carbon.appfactory.deployers.AbstractStratosDeployer;
 import org.wso2.carbon.appfactory.deployers.util.DeployerUtil;
 import org.wso2.carbon.appfactory.nonbuild.artifact.ArtifactGeneratorFactory;
@@ -65,25 +63,16 @@ public class NonBuildableArtifactDeployer extends AbstractStratosDeployer {
 	 * {@inheritDoc}
 	 */
 	@Override
-	protected String getBaseRepoUrl(String stage, String appType) throws AppFactoryException {
+	protected String getBaseRepoUrl() throws AppFactoryException {
 		return AppFactoryUtil.getAppfactoryConfiguration().
 				getFirstProperty("PAASArtifactStorageRepositoryProvider.BaseURL");
-	}
-	
-    /**
-     * {@inheritDoc}
-     */
-	@Override
-	protected String getBaseRepoUrlPattern(String stage, String appType) throws AppFactoryException {
-		String runtime = ApplicationTypeManager.getInstance().getApplicationTypeBean(appType).getRuntimes()[0];
-		return RuntimeManager.getInstance().getRuntimeBean(runtime).getPaasRepositoryURLPattern();
 	}
 
     /**
      * {@inheritDoc}
      */
 	@Override
-	protected String getAdminPassword(String stage, String appType) throws AppFactoryException {
+	protected String getAdminPassword() throws AppFactoryException {
 		return AppFactoryUtil.getAppfactoryConfiguration().
 				getFirstProperty("PAASArtifactStorageRepositoryProvider.AdminPassword");
 	}
@@ -92,7 +81,7 @@ public class NonBuildableArtifactDeployer extends AbstractStratosDeployer {
      * {@inheritDoc}
      */
 	@Override
-	protected String getAdminUserName(String stage, String appType) throws AppFactoryException {
+	protected String getAdminUserName() throws AppFactoryException {
 		return AppFactoryUtil.getAppfactoryConfiguration().
 				getFirstProperty("PAASArtifactStorageRepositoryProvider.AdminUserName");
 	}
@@ -103,10 +92,9 @@ public class NonBuildableArtifactDeployer extends AbstractStratosDeployer {
 	@Override
 	public String getSuccessfulArtifactTempStoragePath(String applicationId, String applicationVersion,
 	                                                   String artifactType, String stage, String tenantDomain)
-	                                                                                                          throws AppFactoryException {
+			throws AppFactoryException {
 		String home = CarbonUtils.getCarbonHome();
-		String path =
-		              home + File.separator + "nonbuildstorage" + File.separator + "appfactory" + File.separator +
+		String path = home + File.separator + "nonbuildstorage" + File.separator + "appfactory" + File.separator +
 		                      tenantDomain + File.separator + stage + File.separator + applicationId + "-" +
 		                      applicationVersion;
         if(log.isDebugEnabled()){

@@ -48,30 +48,6 @@ public abstract class AbstractStratosDeployer extends AbstractDeployer {
         }
     }
 
-    public void uploadESBApp(ExtendedUploadItem[] uploadData, Map metadata)
-            throws AppFactoryException {
-        String serverDeploymentPath = DeployerUtil.getParameter(metadata,
-                AppFactoryConstants.SERVER_DEPLOYMENT_PATHS);
-        log.info("Extended Uploaded Data length - " + uploadData.length);
-        for (ExtendedUploadItem uploadItem : uploadData) {
-            log.info("Upload item " + uploadItem.getFileName());
-            String filePath = uploadItem.getFile().getAbsolutePath()
-                    .toLowerCase();
-            log.info("Upload file item path is " + filePath);
-
-            if (filePath.contains(AppFactoryConstants.ESB_ARTIFACT_PREFIX)) {
-                String fileDir = uploadItem.getFile().getParent();
-                String fileRepoLocation = fileDir
-                        .split(AppFactoryConstants.ESB_ARTIFACT_PREFIX)[1];
-                log.info("repo file location is - " + fileRepoLocation);
-                // addToGitRepo(uploadItem.getFileName(),
-                // uploadItem.getDataHandler(), metadata,
-                // AppFactoryConstants.APPLICATION_TYPE_ESB,
-                // serverDeploymentPath, fileRepoLocation);
-            }
-        }
-    }
-
     private void addToGitRepo(String fileName, File artifacts, Map metadata,
                               String appTypeName, String serverDeploymentPath,
                               String relativePathFragment) throws AppFactoryException {
@@ -113,8 +89,8 @@ public abstract class AbstractStratosDeployer extends AbstractDeployer {
                 log.debug("SubscribeOnDeployment is false");
             }
         }
-        String applicationAdmin = getAdminUserName(stageName, appTypeName);
-        String defaultPassword = getAdminPassword(stageName, appTypeName);
+        String applicationAdmin = getAdminUserName();
+        String defaultPassword = getAdminPassword();
 
         // Create the temporary directory first. without this we can't proceed
         File tempApptypeDirectory = new File(tempPath + File.separator
@@ -302,7 +278,7 @@ public abstract class AbstractStratosDeployer extends AbstractDeployer {
         String paasRepositoryURLPattern = DeployerUtil.getParameter(metadata,
                                                                     AppFactoryConstants.PAAS_REPOSITORY_URL_PATTERN);
         String stage = DeployerUtil.getParameterValue(metadata,AppFactoryConstants.DEPLOY_STAGE);
-        String baseUrl = getBaseRepoUrl(stage, appType);
+        String baseUrl = getBaseRepoUrl();
         String gitRepoUrl = "";
         if (subscribeOnDeployment) {
             gitRepoUrl = baseUrl + "git/" + paasRepositoryURLPattern + File.separator
@@ -324,13 +300,13 @@ public abstract class AbstractStratosDeployer extends AbstractDeployer {
         // Templates.
     }
 
-    protected abstract String getBaseRepoUrl(String stage, String appType)
+    protected abstract String getBaseRepoUrl()
             throws AppFactoryException;
 
-    protected abstract String getAdminUserName(String stage, String appType)
+    protected abstract String getAdminUserName()
             throws AppFactoryException;
 
-    protected abstract String getAdminPassword(String stage, String appType)
+    protected abstract String getAdminPassword()
             throws AppFactoryException;
 
 }

@@ -88,12 +88,8 @@ public class RuntimeDeployer extends AbstractDeployer {
 			RuntimeManager.getInstance().addAppRuntime(appRuntimeConfiguration);
 		} catch (IOException e) {
 			log.error("Error while reading the runtime : " + runtimeFile.getName(), e);
-			throw new RuntimeException("Error while reading the runtime : " + runtimeFile.getName(),
-			                           e);
 		} catch (AppFactoryException e) {
 			log.error("Error while deploying the runtime : " + runtimeFile.getName(), e);
-			throw new RuntimeException(
-					"Error while deploying the runtime : " + runtimeFile.getName(), e);
 		}
 
 		if (log.isDebugEnabled()) {
