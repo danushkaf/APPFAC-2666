@@ -42,6 +42,7 @@ public class AppFactoryTenantCloudInitializerTask implements Task {
     public static final String SUPER_TENANT_ADMIN = "superAdmin";
     public static final String SUPER_TENANT_ADMIN_PASSWORD = "superAdminPassword";
     public static final String STAGE = "stage";
+    public static final String RUNTIMES = "runtimes";
 
     private Map<String, String> properties;
 

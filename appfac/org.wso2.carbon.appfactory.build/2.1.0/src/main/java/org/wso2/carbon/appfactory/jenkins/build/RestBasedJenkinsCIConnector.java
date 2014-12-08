@@ -39,7 +39,7 @@ import org.wso2.carbon.appfactory.core.apptype.ApplicationTypeManager;
 import org.wso2.carbon.appfactory.core.build.DefaultBuildDriverListener;
 import org.wso2.carbon.appfactory.core.dto.Statistic;
 import org.wso2.carbon.appfactory.core.internal.ServiceHolder;
-import org.wso2.carbon.appfactory.core.runtime.RuntimeBean;
+import org.wso2.carbon.appfactory.common.beans.RuntimeBean;
 import org.wso2.carbon.appfactory.core.runtime.RuntimeManager;
 import org.wso2.carbon.appfactory.core.util.AppFactoryCoreUtil;
 import org.wso2.carbon.appfactory.eventing.AppFactoryEventException;
@@ -1166,7 +1166,7 @@ public class RestBasedJenkinsCIConnector {
 			parameters.add(new NameValuePair(AppFactoryConstants.RUNTIME_DATA_CARTRIDGE_ALIAS,
 			                                 runtimeBean.getDataCartridgeAlias()));
 			parameters.add(new NameValuePair(AppFactoryConstants.RUNTIME_SUBSCRIBE_ON_DEPLOYMENT,
-			                                 runtimeBean.getSubscribeOnDeployment()));
+			                                 Boolean.toString(runtimeBean.getSubscribeOnDeployment())));
 			parameters.add(new NameValuePair(AppFactoryConstants.SERVER_DEPLOYMENT_PATHS,
 			                                 applicationTypeBean.getServerDeploymentPath()));
 			parameters.add(new NameValuePair("jobName", jobName));
@@ -1259,7 +1259,7 @@ public class RestBasedJenkinsCIConnector {
 		parameters.add(new NameValuePair(AppFactoryConstants.RUNTIME_DATA_CARTRIDGE_ALIAS,
 		                                 runtimeBean.getDataCartridgeAlias()));
 		parameters.add(new NameValuePair(AppFactoryConstants.RUNTIME_SUBSCRIBE_ON_DEPLOYMENT,
-		                                 runtimeBean.getSubscribeOnDeployment()));
+		                                 Boolean.toString(runtimeBean.getSubscribeOnDeployment())));
 		parameters.add(new NameValuePair(AppFactoryConstants.APPLICATION_EXTENSION,
 		                                 applicationTypeBean.getServerDeploymentPath()));
 		parameters.add(new NameValuePair("deployStage", stage));

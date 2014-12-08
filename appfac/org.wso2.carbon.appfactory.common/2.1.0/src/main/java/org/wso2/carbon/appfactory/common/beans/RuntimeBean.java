@@ -16,7 +16,7 @@
  *
  */
 
-package org.wso2.carbon.appfactory.core.runtime;
+package org.wso2.carbon.appfactory.common.beans;
 
 /**
  * Bean class to store application runtime data
@@ -34,7 +34,7 @@ public class RuntimeBean {
 	private String repoURL;
 	private String dataCartridgeType;
 	private String dataCartridgeAlias;
-	private String subscribeOnDeployment;
+	private boolean subscribeOnDeployment;
 
 	public RuntimeBean() {
 	}
@@ -119,11 +119,11 @@ public class RuntimeBean {
 		this.dataCartridgeAlias = dataCartridgeAlias;
 	}
 
-	public String getSubscribeOnDeployment() {
+	public boolean getSubscribeOnDeployment() {
 		return subscribeOnDeployment;
 	}
 
-	public void setSubscribeOnDeployment(String subscribeOnDeployment) {
+	public void setSubscribeOnDeployment(boolean subscribeOnDeployment) {
 		this.subscribeOnDeployment = subscribeOnDeployment;
 	}
 

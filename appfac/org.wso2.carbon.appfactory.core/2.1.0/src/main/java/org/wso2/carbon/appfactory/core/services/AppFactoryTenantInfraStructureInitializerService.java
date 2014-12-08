@@ -15,16 +15,16 @@
  */
 package org.wso2.carbon.appfactory.core.services;
 
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.wso2.carbon.appfactory.common.AppFactoryConfiguration;
 import org.wso2.carbon.appfactory.common.AppFactoryConstants;
 import org.wso2.carbon.appfactory.common.AppFactoryException;
+import org.wso2.carbon.appfactory.common.beans.RuntimeBean;
+import org.wso2.carbon.appfactory.core.dto.TenantInfoBean;
 import org.wso2.carbon.appfactory.core.internal.ServiceHolder;
+import org.wso2.carbon.appfactory.core.runtime.RuntimeManager;
 import org.wso2.carbon.appfactory.core.task.AppFactoryTenantCloudInitializerTask;
 import org.wso2.carbon.appfactory.core.task.AppFactoryTenantCreationNotificationInitializerTask;
 import org.wso2.carbon.appfactory.core.task.AppFactoryTenantRepositoryInitializerTask;
@@ -32,7 +32,12 @@ import org.wso2.carbon.core.AbstractAdmin;
 import org.wso2.carbon.ntask.common.TaskException;
 import org.wso2.carbon.ntask.core.TaskInfo;
 import org.wso2.carbon.ntask.core.TaskManager;
-import org.wso2.carbon.appfactory.core.dto.TenantInfoBean;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Service used to initialize all the 3rd party tools on tenant creation
@@ -132,7 +137,6 @@ public class AppFactoryTenantInfraStructureInitializerService extends AbstractAd
      * Used to extend Tenant Creation
      *
      * @param bean  with tenant details
-     * @param stage Environment
      * @return true if the operation is success
      * @throws AppFactoryException
      */
@@ -180,11 +184,34 @@ public class AppFactoryTenantInfraStructureInitializerService extends AbstractAd
         AppFactoryConfiguration configuration = ServiceHolder.getAppFactoryConfiguration();
         String serverURL = configuration.getFirstProperty(ENVIRONMENT + "." + stage + "." + "TenantMgtUrl");
 
-        String adminUsername=configuration.getFirstProperty(AppFactoryConstants.SERVER_ADMIN_NAME);
-        String adminPassword=configuration.getFirstProperty(AppFactoryConstants.SERVER_ADMIN_PASSWORD);
+        String adminUsername = configuration.getFirstProperty(AppFactoryConstants.SERVER_ADMIN_NAME);
+        String adminPassword = configuration.getFirstProperty(AppFactoryConstants.SERVER_ADMIN_PASSWORD);
         TaskInfo.TriggerInfo triggerInfo = getTriggerWithDalay();
         String taskName = "cloud-init-" + stage + "-" + bean.getTenantDomain();
         Map<String, String> properties = new HashMap<String, String>();
+
+        Map<String, RuntimeBean> runtimeBeanMap = RuntimeManager.getInstance().getRuntimeBeanMap();
+        ArrayList<RuntimeBean> runtimeBeansArrayList = new ArrayList<RuntimeBean>();
+
+        for (String runtimeName : runtimeBeanMap.keySet()) {
+            RuntimeBean runtimeBean = RuntimeManager.getInstance().getRuntimeBean(runtimeName);
+            if(!runtimeBean.getSubscribeOnDeployment()){
+                runtimeBeansArrayList.add(runtimeBean);
+            }
+        }
+
+        ObjectMapper mapper = new ObjectMapper();
+        String json;
+        try {
+            json = mapper.writeValueAsString(runtimeBeansArrayList.toArray());
+        } catch (IOException e) {
+            String msg = "Error while converting the runtime bean to a json string";
+            log.error(msg, e);
+            throw new AppFactoryException(msg, e); //TODO: Do we need to throw this? Discuss...
+        }
+        properties.put(AppFactoryTenantCloudInitializerTask.RUNTIMES, json);
+
+        properties.put(AppFactoryTenantCloudInitializerTask.TENANT_USAGE_PLAN, bean.getUsagePlan());
         properties.put(AppFactoryTenantCloudInitializerTask.TENANT_USAGE_PLAN, bean.getUsagePlan());
         properties.put(AppFactoryTenantCloudInitializerTask.TENANT_DOMAIN, bean.getTenantDomain());
         properties.put(AppFactoryTenantCloudInitializerTask.TENANT_ID, String.valueOf(bean.getTenantId()));

@@ -17,13 +17,12 @@
 package org.wso2.carbon.appfactory.s4.integration;
 
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.appfactory.common.AppFactoryConfiguration;
-import org.wso2.carbon.appfactory.common.AppFactoryConstants;
 import org.wso2.carbon.appfactory.common.AppFactoryException;
 import org.wso2.carbon.appfactory.common.util.AppFactoryUtil;
-import org.wso2.carbon.appfactory.s4.integration.internal.ServiceReferenceHolder;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -102,7 +101,7 @@ public class DeployerInfoBuilder {
 
 
 //        No endpoint has been defined. This is not the S2 Deployer
-        if (endpoint == null || AppFactoryConstants.EMPTY_STRING.equals(endpoint)) {
+        if (StringUtils.isEmpty(endpoint)) {
             return;
         }
         deployerInfo.setEndpoint(endpoint);

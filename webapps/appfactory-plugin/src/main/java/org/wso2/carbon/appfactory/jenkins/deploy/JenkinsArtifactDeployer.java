@@ -191,11 +191,7 @@ public class JenkinsArtifactDeployer extends AbstractStratosDeployer {
 		File[] lastSucessFiles = getLastBuildArtifact(lastSucessBuildFilePath, artifactType, extension);
 		for (File lastSucessFile : lastSucessFiles) {
 			FilePath lastSuccessArtifactPath = new FilePath(lastSucessFile);
-			String promotedDestDirPath =
-			                             destDir.getAbsolutePath() +
-			                                     File.separator +
-			                                     getPromotedDestinationPathForApplication(lastSucessFile.getParent(),
-			                                                                              artifactType);
+			String promotedDestDirPath = destDir.getAbsolutePath();
 
 			File promotedDestDir = new File(promotedDestDirPath);
 			FilePath promotedDestDirFilePath = new FilePath(promotedDestDir);
@@ -288,25 +284,19 @@ public class JenkinsArtifactDeployer extends AbstractStratosDeployer {
 	}
 
 	@Override
-	protected String getBaseRepoUrl(String stage, String appType) throws AppFactoryException {
+	protected String getBaseRepoUrl() throws AppFactoryException {
 		return AppFactoryUtil.getAppfactoryConfiguration().
 				getFirstProperty("PAASArtifactStorageRepositoryProvider.BaseURL");
 	}
 
-
 	@Override
-	protected String getBaseRepoUrlPattern(String stage, String appType) throws AppFactoryException {
-		return Utils.getRepositoryProviderProperty(stage, "URLPattern", appType);
-	}
-
-	@Override
-	protected String getAdminPassword(String stage, String appType) throws AppFactoryException {
+	protected String getAdminPassword() throws AppFactoryException {
 		return AppFactoryUtil.getAppfactoryConfiguration().
 				getFirstProperty("PAASArtifactStorageRepositoryProvider.AdminPassword");
 	}
 
 	@Override
-	protected String getAdminUserName(String stage, String appType) throws AppFactoryException {
+	protected String getAdminUserName() throws AppFactoryException {
 		return AppFactoryUtil.getAppfactoryConfiguration().
 				getFirstProperty("PAASArtifactStorageRepositoryProvider.AdminUserName");
 	}

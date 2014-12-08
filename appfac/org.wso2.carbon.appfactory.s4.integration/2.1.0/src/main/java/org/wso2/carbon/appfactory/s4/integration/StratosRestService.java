@@ -1,5 +1,6 @@
 package org.wso2.carbon.appfactory.s4.integration;
 
+import com.google.gson.*;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpStatus;
@@ -23,12 +24,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.SocketException;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonElement;
 
 /**
  * Http Client based REST Client for calling Stratos APIs
@@ -146,7 +141,7 @@ public class StratosRestService {
 			cartridgeInfoBean.setDeploymentPolicy(depPolicy);
 			subscribeCartridge(cartridgeInfoBean);
 
-		} catch (Exception e) {
+		} catch (CommandException e) {
 			handleException("Exception in subscribing to cartridge", e);
 		}
 	}

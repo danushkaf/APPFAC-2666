@@ -23,6 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.appfactory.common.AppFactoryConfigurationBuilder;
 import org.wso2.carbon.appfactory.common.AppFactoryConstants;
 import org.wso2.carbon.appfactory.common.AppFactoryException;
+import org.wso2.carbon.appfactory.common.beans.RuntimeBean;
 
 import java.io.File;
 import java.util.HashMap;
@@ -107,10 +108,8 @@ public class RuntimeManager {
 			applicationRuntimeBean.setRuntimeName(runtimeName);
 			applicationRuntimeBean.setDeployerClassName(
 					properties.getProperty(AppFactoryConstants.RUNTIME_DEPLOYER_CLASSNAME));
-
 			applicationRuntimeBean.setPaasRepositoryURLPattern(
 					properties.getProperty(AppFactoryConstants.RUNTIME_REPOSITORY_URL_PATTERN));
-
 			applicationRuntimeBean.setAliasPrefix(
 					properties.getProperty(AppFactoryConstants.RUNTIME_ALIAS_PREFIX));
 			applicationRuntimeBean.setCartridgeTypePrefix(
@@ -119,21 +118,17 @@ public class RuntimeManager {
 					properties.getProperty(AppFactoryConstants.RUNTIME_DEPLOYMENT_POLICY));
 			applicationRuntimeBean.setAutoscalePolicy(
 					properties.getProperty(AppFactoryConstants.RUNTIME_AUTOSCALE_POLICY));
-			if (properties.get(AppFactoryConstants.RUNTIME_REPO_URL) != null) {
-				applicationRuntimeBean
-						.setRepoURL(properties.getProperty(AppFactoryConstants.RUNTIME_REPO_URL));
-			}
-			if (properties.get(AppFactoryConstants.RUNTIME_DATA_CARTRIDGE_TYPE) != null) {
-				applicationRuntimeBean.setDataCartridgeType(properties.getProperty(
-						AppFactoryConstants.RUNTIME_DATA_CARTRIDGE_TYPE));
-			}
-			if (properties.get(AppFactoryConstants.RUNTIME_DATA_CARTRIDGE_ALIAS) != null) {
-				applicationRuntimeBean.setDataCartridgeAlias(
-						properties.getProperty(AppFactoryConstants.RUNTIME_DATA_CARTRIDGE_ALIAS));
-			}
+			applicationRuntimeBean.setRepoURL(
+					properties.getProperty(AppFactoryConstants.RUNTIME_REPO_URL));
+			applicationRuntimeBean.setDataCartridgeType(
+					properties.getProperty(AppFactoryConstants.RUNTIME_DATA_CARTRIDGE_TYPE));
+			applicationRuntimeBean.setDataCartridgeAlias(
+					properties.getProperty(AppFactoryConstants.RUNTIME_DATA_CARTRIDGE_ALIAS));
 			if (properties.get(AppFactoryConstants.RUNTIME_SUBSCRIBE_ON_DEPLOYMENT) != null) {
-				applicationRuntimeBean.setSubscribeOnDeployment(properties.getProperty(
-						AppFactoryConstants.RUNTIME_SUBSCRIBE_ON_DEPLOYMENT));
+				applicationRuntimeBean.setSubscribeOnDeployment(
+						Boolean.valueOf(properties.getProperty(AppFactoryConstants.RUNTIME_SUBSCRIBE_ON_DEPLOYMENT)));
+			} else {
+				applicationRuntimeBean.setSubscribeOnDeployment(false);
 			}
 
 			runtimeManager.getRuntimeBeanMap().put(runtimeName, applicationRuntimeBean);

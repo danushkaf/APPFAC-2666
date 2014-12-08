@@ -8,8 +8,6 @@ import org.wso2.carbon.appfactory.common.AppFactoryConstants;
 import org.wso2.carbon.appfactory.common.AppFactoryException;
 import org.wso2.carbon.appfactory.deployers.clients.AppfactoryRepositoryClient;
 import org.wso2.carbon.appfactory.deployers.util.DeployerUtil;
-import org.wso2.carbon.appfactory.s4.integration.DeployerInfo;
-import org.wso2.carbon.appfactory.s4.integration.DeployerInfoBuilder;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -52,23 +50,13 @@ public abstract class AbstractStratosDeployer extends AbstractDeployer {
                               String appTypeName, String serverDeploymentPath,
                               String relativePathFragment) throws AppFactoryException {
 
-        DeployerInfoBuilder deployerInfoBuilder = new DeployerInfoBuilder();
-        deployerInfoBuilder.build();
-        DeployerInfo deployerInfo = deployerInfoBuilder.getDeployerPerApp(((String[]) metadata.get("deployStage"))[0],((String[])metadata.get("deployerType"))[0]);
-
         // subscribeOnDeployment is true or not
-        boolean subscribeOnDeployment;
-        if (deployerInfo.getSubscribeOnDeployment() != null) {
-            subscribeOnDeployment = Boolean.parseBoolean(deployerInfo
-                    .getSubscribeOnDeployment());
-        } else {
-            subscribeOnDeployment = false;
-        }
+        boolean subscribeOnDeployment = Boolean.parseBoolean(
+                DeployerUtil.getParameterValue(metadata, AppFactoryConstants.RUNTIME_SUBSCRIBE_ON_DEPLOYMENT));
         String applicationId = DeployerUtil.getParameterValue(metadata,
                 AppFactoryConstants.APPLICATION_ID);
 
         int tenantId = getTenantID();
-        StratosDeployer subscriptionHandler = new StratosDeployer();
         String gitRepoUrl = generateRepoUrl(applicationId, metadata, tenantId,
                 appTypeName, subscribeOnDeployment);
         String stageName = DeployerUtil.getParameterValue(metadata,
@@ -79,11 +67,8 @@ public abstract class AbstractStratosDeployer extends AbstractDeployer {
             if (log.isDebugEnabled()) {
                 log.debug("SubscribeOnDeployment is true");
             }
-            String url = subscriptionHandler.createSubscription(metadata,
-                                                                stageName, appTypeName, username,
-                                                                tenantId, applicationId,
-                                                                getTenantDomain());
-
+            String url = SubscriptionHandler.getInstance().createSubscription(metadata, stageName, username,
+                                                                tenantId, applicationId, getTenantDomain());
         } else {
             if (log.isDebugEnabled()) {
                 log.debug("SubscribeOnDeployment is false");

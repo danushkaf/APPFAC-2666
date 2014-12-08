@@ -21,14 +21,17 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.stratos.tenant.mgt.stub.TenantMgtAdminServiceExceptionException;
 import org.apache.stratos.tenant.mgt.stub.TenantMgtAdminServiceStub;
 import org.apache.stratos.tenant.mgt.stub.beans.xsd.TenantInfoBean;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.wso2.carbon.appfactory.common.AppFactoryException;
+import org.wso2.carbon.appfactory.common.beans.RuntimeBean;
+import org.wso2.carbon.appfactory.common.util.AppFactoryUtil;
 import org.wso2.carbon.appfactory.core.TenantCloudInitializer;
-import org.wso2.carbon.appfactory.core.apptype.ApplicationTypeManager;
 import org.wso2.carbon.appfactory.core.task.AppFactoryTenantCloudInitializerTask;
 import org.wso2.carbon.appfactory.s4.integration.internal.ServiceReferenceHolder;
 import org.wso2.carbon.utils.CarbonUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.Calendar;
 import java.util.Map;
@@ -56,25 +59,23 @@ public class S4TenantCloudInitializer implements TenantCloudInitializer {
 
 			addTenant(properties);
 
-			String stage = properties
-					.get(AppFactoryTenantCloudInitializerTask.STAGE);
+			String stage = properties.get(AppFactoryTenantCloudInitializerTask.STAGE);
 
-			DeployerInfoBuilder deployerInfoBuilder = new DeployerInfoBuilder();
-			deployerInfoBuilder.build();
-			Map<String, DeployerInfo> deployerInfoMap = deployerInfoBuilder
-					.getDeployerInfo(stage);
+			String runtimesJson = properties.get(AppFactoryTenantCloudInitializerTask.RUNTIMES);
+			RuntimeBean[] runtimeBeans;
 
-			for (DeployerInfo deployerInfo : deployerInfoMap.values()) {
-				if (!Boolean.parseBoolean(deployerInfo
-						.getSubscribeOnDeployment())) {
-					String repoURL;
+			ObjectMapper mapper = new ObjectMapper();
+			try {
+				runtimeBeans = mapper.readValue(runtimesJson, RuntimeBean[].class);
+			} catch (IOException e) {
+				String msg = "Error while converting the json string to a runtime bean";
+				log.error(msg, e);
+				throw new AppFactoryException(msg, e); //TODO: Do we need to throw this? Discuss...
+			}
 
-					repoURL = createGitRepository(deployerInfo, properties);
-					deployerInfo.setRepoURL(repoURL);
-
-					subscribe(deployerInfo, properties, stage);
-				}
-
+			for (RuntimeBean runtimeBean : runtimeBeans) {
+				String repoURL = createGitRepository(runtimeBean, properties);
+				subscribe(runtimeBean, properties, stage);
 			}
 			log.info("successfully created tenant in " + stage);
 		} catch (AppFactoryException e) {
@@ -197,21 +198,27 @@ public class S4TenantCloudInitializer implements TenantCloudInitializer {
 		}
 	}
 
-	private String createGitRepository(DeployerInfo deployerInfo,
-			Map<String, String> properties) throws AppFactoryException {
+	private String createGitRepository(RuntimeBean runtimeBean,
+	                                   Map<String, String> properties) throws AppFactoryException {
 		String repoUrl;
 		String stage = properties
 				.get(AppFactoryTenantCloudInitializerTask.STAGE);
 		int tenantID = Integer.parseInt(properties
 				.get(AppFactoryTenantCloudInitializerTask.TENANT_ID));
 		try {
-			RepositoryProvider repoProvider = (RepositoryProvider) deployerInfo
-					.getRepoProvider().newInstance();
-			repoProvider.setBaseUrl(deployerInfo.getBaseURL());
-			repoProvider.setAdminUsername(deployerInfo.getAdminUserName());
-			repoProvider.setAdminPassword(deployerInfo.getAdminPassword());
+			String repoProviderClassName = AppFactoryUtil.getAppfactoryConfiguration().
+					getFirstProperty("PAASArtifactStorageRepositoryProvider.ProviderClass");
+			ClassLoader loader = getClass().getClassLoader();
+			Class<?> repoProviderClass = Class.forName(repoProviderClassName, true, loader);
+			RepositoryProvider repoProvider = (RepositoryProvider) repoProviderClass.newInstance();
+			repoProvider.setBaseUrl(AppFactoryUtil.getAppfactoryConfiguration().
+					getFirstProperty("PAASArtifactStorageRepositoryProvider.BaseURL"));
+			repoProvider.setAdminUsername(AppFactoryUtil.getAppfactoryConfiguration().
+					getFirstProperty("PAASArtifactStorageRepositoryProvider.AdminUserName"));
+			repoProvider.setAdminPassword(AppFactoryUtil.getAppfactoryConfiguration().
+					getFirstProperty("PAASArtifactStorageRepositoryProvider.AdminPassword"));
 			repoProvider.setRepoName(generateRepoUrlFromTemplate(
-					deployerInfo.getRepoPattern(), tenantID, stage));
+					runtimeBean.getPaasRepositoryURLPattern(), tenantID, stage));
 
 			repoUrl = repoProvider.createRepository();
 			log.info("***************************repo url 1:" + repoUrl
@@ -225,11 +232,14 @@ public class S4TenantCloudInitializer implements TenantCloudInitializer {
 		} catch (AppFactoryException e) {
 			String msg = "Unable to create repository";
 			throw new AppFactoryException(msg, e);
+		} catch (ClassNotFoundException e) {
+			String msg = "Unable to create repository";
+			throw new AppFactoryException(msg, e);
 		}
 		return repoUrl;
 	}
 
-	private void subscribe(DeployerInfo deployerInfo,
+	private void subscribe(RuntimeBean runtimeBean,
 			Map<String, String> properties, String stage)
 			throws AppFactoryException {
 		String serverURL = properties
@@ -245,15 +255,18 @@ public class S4TenantCloudInitializer implements TenantCloudInitializer {
 		restService = new StratosRestService(serverURL, username,
 				tenantAdminPassword);
 
-		restService.subscribe(deployerInfo.getCartridgeType(),
-				deployerInfo.getAlias() + tenantDomain.replace(".", "dot"),
-				deployerInfo.getRepoURL(), true,
-				deployerInfo.getAdminUserName(),
-				deployerInfo.getAdminPassword(),
-				deployerInfo.getDataCartridgeType(),
-				deployerInfo.getDataCartridgeAlias(),
-				deployerInfo.getAutoscalePolicy(),
-				deployerInfo.getDeploymentPolicy());
+		restService.subscribe(runtimeBean.getCartridgeTypePrefix(),
+		                      runtimeBean.getAliasPrefix() + stage + tenantDomain.replace(".", "dot"),
+		                      AppFactoryUtil.getAppfactoryConfiguration().
+				                      getFirstProperty("PAASArtifactStorageRepositoryProvider.BaseURL"), true,
+		                      AppFactoryUtil.getAppfactoryConfiguration().
+				                      getFirstProperty("PAASArtifactStorageRepositoryProvider.AdminUserName"),
+		                      AppFactoryUtil.getAppfactoryConfiguration().
+				                      getFirstProperty("PAASArtifactStorageRepositoryProvider.AdminPassword"),
+		                      runtimeBean.getDataCartridgeType(),
+		                      runtimeBean.getDataCartridgeAlias(),
+		                      runtimeBean.getAutoscalePolicy(),
+		                      runtimeBean.getDeploymentPolicy());
 
 	}
 }
