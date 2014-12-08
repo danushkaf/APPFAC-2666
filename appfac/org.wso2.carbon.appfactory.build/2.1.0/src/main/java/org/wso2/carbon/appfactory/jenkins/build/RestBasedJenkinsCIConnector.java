@@ -1147,6 +1147,8 @@ public class RestBasedJenkinsCIConnector {
 			}
 
 			parameters.add(new NameValuePair(AppFactoryConstants.RUNTIME_NAME_FOR_APPTYPE,runtimesNameForApptype));
+			parameters.add(new NameValuePair(AppFactoryConstants.RUNTIME_DEPLOYER_CLASSNAME,
+			                                 runtimeBean.getDeployerClassName()));
 			parameters.add(new NameValuePair(AppFactoryConstants.RUNTIME_ALIAS_PREFIX,
 			                                 runtimeBean.getAliasPrefix() + stage));
 			parameters.add(new NameValuePair(AppFactoryConstants.RUNTIME_CARTRIDGE_TYPE_PREFIX,
@@ -1238,6 +1240,8 @@ public class RestBasedJenkinsCIConnector {
 		}
 
 		parameters.add(new NameValuePair(AppFactoryConstants.RUNTIME_NAME_FOR_APPTYPE,runtimesNameForApptype));
+		parameters.add(new NameValuePair(AppFactoryConstants.RUNTIME_DEPLOYER_CLASSNAME,
+		                                 runtimeBean.getDeployerClassName()));
 		parameters.add(new NameValuePair(AppFactoryConstants.RUNTIME_ALIAS_PREFIX,
 		                                 runtimeBean.getAliasPrefix() + stage));
 		parameters.add(new NameValuePair(AppFactoryConstants.RUNTIME_CARTRIDGE_TYPE_PREFIX,

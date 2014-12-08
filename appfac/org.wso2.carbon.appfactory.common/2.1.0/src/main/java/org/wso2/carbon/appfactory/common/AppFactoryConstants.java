@@ -66,13 +66,12 @@ public class AppFactoryConstants {
 	public static final String RUNTIME_DATA_CARTRIDGE_ALIAS="DataCartridgeAlias";
 	public static final String RUNTIME_SUBSCRIBE_ON_DEPLOYMENT="SubscribeOnDeployment";
 	public static final String RUNTIME_REPO_PROVIDER_URL="repoProviderUrl";
+	public static final String RUNTIME_NAME_FOR_APPTYPE ="runtimesNameForApptype";
 
 	public static final String PASS_ARTIFACT_STORAGE_REPOSITORY_PROVIDER_ADMIN_USERNAME="PAASArtifactStorageRepositoryProvider.AdminUserName";
 	public static final String PASS_ARTIFACT_STORAGE_REPOSITORY_PROVIDER_ADMIN_PASSWORD="PAASArtifactStorageRepositoryProvider.AdminPassword";
 	public static final String PASS_ARTIFACT_STORAGE_REPOSITORY_PROVIDER_BASE_URL="PAASArtifactStorageRepositoryProvider.BaseURL";
 	public static final String PASS_ARTIFACT_STORAGE_REPOSITORY_PROVIDER_PROVIDER_CLASS="PAASArtifactStorageRepositoryProvider.ProviderClass";
-
-	public static final String RUNTIME_NAME_FOR_APPTYPE ="runtimesNameForApptype";
 
     /**
      * Defining archetype related constants
@@ -385,8 +384,4 @@ public class AppFactoryConstants {
 
 	}
 
-	/**
-	 * Constant for numbers
-	 */
-	public static final int ZERO=0;
 }

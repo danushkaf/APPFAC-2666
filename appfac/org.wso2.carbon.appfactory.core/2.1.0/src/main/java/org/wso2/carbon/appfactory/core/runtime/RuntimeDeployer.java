@@ -74,10 +74,13 @@ public class RuntimeDeployer extends AbstractDeployer {
 		}
 
 		String archivePath = runtimeFile.getAbsolutePath();
-		String destinationFolderPath =
-				runtimeFile.getParent() + File.separator + runtimeFile.getName().substring(
-						AppFactoryConstants.ZERO,
-						runtimeFile.getName().lastIndexOf(AppFactoryConstants.DOT));
+		// Calculating the folder path to extract the archive.
+		// If the archive is example.runtime the folder to extract is example.
+		// This is done by adding the extension less file name to the parent folder name.
+		String destinationFolderPath = runtimeFile.getParent() +
+		                               File.separator +
+		                               runtimeFile.getName().
+				                               substring(0, runtimeFile.getName().lastIndexOf(AppFactoryConstants.DOT));
 		try {
 			UnzipUtility.unzip(archivePath, destinationFolderPath);
 			File appRuntimeConfiguration =
