@@ -131,8 +131,8 @@ public class StratosRestService {
 
 			}
 
-			cartridgeInfoBean.setCartridgeType(cartridgeType);
-			cartridgeInfoBean.setAlias(alias);
+			cartridgeInfoBean.setCartridgeType(cartridgeType.toLowerCase());
+			cartridgeInfoBean.setAlias(alias.toLowerCase());
 			cartridgeInfoBean.setRepoURL(externalRepoURL);
 			cartridgeInfoBean.setPrivateRepo(privateRepo);
 			cartridgeInfoBean.setRepoUsername(username);

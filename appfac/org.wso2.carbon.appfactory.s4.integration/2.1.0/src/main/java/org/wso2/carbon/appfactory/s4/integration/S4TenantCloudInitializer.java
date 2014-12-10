@@ -255,7 +255,7 @@ public class S4TenantCloudInitializer implements TenantCloudInitializer {
 		restService = new StratosRestService(serverURL, username,
 				tenantAdminPassword);
 
-		restService.subscribe(runtimeBean.getCartridgeTypePrefix(),
+		restService.subscribe(runtimeBean.getCartridgeTypePrefix() + stage,
 		                      runtimeBean.getAliasPrefix() + stage + tenantDomain.replace(".", "dot"),
 		                      AppFactoryUtil.getAppfactoryConfiguration().
 				                      getFirstProperty("PAASArtifactStorageRepositoryProvider.BaseURL"), true,
