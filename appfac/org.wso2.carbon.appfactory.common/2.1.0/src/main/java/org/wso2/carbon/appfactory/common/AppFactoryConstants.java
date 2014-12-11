@@ -190,6 +190,7 @@ public class AppFactoryConstants {
 
 	public static final String SECURE_VAULT_NS = "http://org.wso2.securevault/configuration";
 	public static final String SECRET_ALIAS_ATTR_NAME = "secretAlias";
+	public static final String REGISTRATION_LINK = "RegistrationLink";
 
 	/**
 	 * External system names

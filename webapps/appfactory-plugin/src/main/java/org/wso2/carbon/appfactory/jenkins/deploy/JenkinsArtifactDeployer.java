@@ -23,8 +23,8 @@ import org.wso2.carbon.appfactory.jenkins.AppfactoryPluginManager;
 import org.wso2.carbon.appfactory.jenkins.api.JenkinsBuildStatusProvider;
 import org.wso2.carbon.appfactory.jenkins.artifact.storage.Utils;
 import org.wso2.carbon.appfactory.jenkins.util.JenkinsUtility;
-import org.wso2.carbon.h2.osgi.utils.CarbonUtils;
 
+import javax.naming.NamingException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -250,7 +250,14 @@ public class JenkinsArtifactDeployer extends AbstractStratosDeployer {
 	public String getSuccessfulArtifactTempStoragePath(String applicationId, String applicationVersion,
 	                                                    String artifactType, String stage, String tenantDomain)
 														throws AppFactoryException {
-		String jenkinsHome = CarbonUtils.getCarbonHome();
+		String jenkinsHome = null;
+		try {
+			jenkinsHome = DeployerUtil.getJenkinsHome();
+		} catch (NamingException e) {
+			String msg = "Error while reading jenkins home from context";
+			log.error(msg, e);
+			throw new AppFactoryException(msg, e);
+		}
 		String jobName = JenkinsUtility.getJobName(applicationId, applicationVersion);
 		String path = jenkinsHome + File.separator + "jobs" + File.separator + jobName +
 		              File.separator + "lastSuccessful";
