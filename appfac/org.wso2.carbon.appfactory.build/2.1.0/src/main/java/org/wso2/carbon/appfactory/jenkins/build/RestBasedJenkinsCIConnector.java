@@ -1260,6 +1260,8 @@ public class RestBasedJenkinsCIConnector {
 		                                 runtimeBean.getDataCartridgeAlias()));
 		parameters.add(new NameValuePair(AppFactoryConstants.RUNTIME_SUBSCRIBE_ON_DEPLOYMENT,
 		                                 Boolean.toString(runtimeBean.getSubscribeOnDeployment())));
+		parameters.add(new NameValuePair(AppFactoryConstants.SERVER_DEPLOYMENT_PATHS,
+		                                 applicationTypeBean.getServerDeploymentPath()));
 		parameters.add(new NameValuePair(AppFactoryConstants.APPLICATION_EXTENSION,
 		                                 applicationTypeBean.getExtension()));
 		parameters.add(new NameValuePair("deployStage", stage));
