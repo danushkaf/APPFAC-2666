@@ -111,8 +111,6 @@ public class SubscriptionHandler {
 
                 String cartridgeTypePrefix = DeployerUtil.getParameterValue(
                         deployerInfo,AppFactoryConstants.RUNTIME_CARTRIDGE_TYPE_PREFIX);
-                String repoProviderURL = DeployerUtil.getParameterValue(
-                        deployerInfo,AppFactoryConstants.RUNTIME_REPO_PROVIDER_URL);
                 String dataCartridgeType = DeployerUtil.getParameterValue(
                         deployerInfo, AppFactoryConstants.RUNTIME_DATA_CARTRIDGE_TYPE);
                 String dataCartridgeAlias = DeployerUtil.getParameterValue(
@@ -124,7 +122,7 @@ public class SubscriptionHandler {
                 restService.subscribe(
                         cartridgeTypePrefix,
                         aliasPrefix,
-                        repoProviderURL,
+                        repoUrl,
                         true, adminUserName,adminPassword,
                         dataCartridgeType,
                         dataCartridgeAlias,

@@ -75,7 +75,7 @@ public class S4TenantCloudInitializer implements TenantCloudInitializer {
 
 			for (RuntimeBean runtimeBean : runtimeBeans) {
 				String repoURL = createGitRepository(runtimeBean, properties);
-				subscribe(runtimeBean, properties, stage);
+				subscribe(runtimeBean, stage, repoURL, properties);
 			}
 			log.info("successfully created tenant in " + stage);
 		} catch (AppFactoryException e) {
@@ -239,8 +239,7 @@ public class S4TenantCloudInitializer implements TenantCloudInitializer {
 		return repoUrl;
 	}
 
-	private void subscribe(RuntimeBean runtimeBean,
-			Map<String, String> properties, String stage)
+	private void subscribe(RuntimeBean runtimeBean, String stage, String repoURL, Map<String, String> properties)
 			throws AppFactoryException {
 		String serverURL = properties
 				.get(AppFactoryTenantCloudInitializerTask.SERVER_URL);
@@ -257,8 +256,7 @@ public class S4TenantCloudInitializer implements TenantCloudInitializer {
 
 		restService.subscribe(runtimeBean.getCartridgeTypePrefix() + stage,
 		                      runtimeBean.getAliasPrefix() + stage + tenantDomain.replace(".", "dot"),
-		                      AppFactoryUtil.getAppfactoryConfiguration().
-				                      getFirstProperty("PAASArtifactStorageRepositoryProvider.BaseURL"), true,
+		                      repoURL, true,
 		                      AppFactoryUtil.getAppfactoryConfiguration().
 				                      getFirstProperty("PAASArtifactStorageRepositoryProvider.AdminUserName"),
 		                      AppFactoryUtil.getAppfactoryConfiguration().
