@@ -1261,7 +1261,7 @@ public class RestBasedJenkinsCIConnector {
 		parameters.add(new NameValuePair(AppFactoryConstants.RUNTIME_SUBSCRIBE_ON_DEPLOYMENT,
 		                                 Boolean.toString(runtimeBean.getSubscribeOnDeployment())));
 		parameters.add(new NameValuePair(AppFactoryConstants.APPLICATION_EXTENSION,
-		                                 applicationTypeBean.getServerDeploymentPath()));
+		                                 applicationTypeBean.getExtension()));
 		parameters.add(new NameValuePair("deployStage", stage));
 		String tenantUserName = userName + "@" + tenantDomain;
 		parameters.add(new NameValuePair("tenantUserName", tenantUserName));
